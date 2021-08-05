@@ -27,7 +27,8 @@ namespace MaxFlowOptimizeDemo
         public void ReadFromJSON(string path)
         {
             var serializer = new JsonSerializer();
-            using StreamReader file = File.OpenText("../../../problem.json");
+            //../../../problem.json se parte da visual studio per ora
+            using StreamReader file = File.OpenText("problem.json");
             using JsonTextReader reader = new JsonTextReader(file);
             var result = serializer.Deserialize<test>(reader);
             double[] objectiveCoeffs = ListToArray(result.objectiveCoeffs);
