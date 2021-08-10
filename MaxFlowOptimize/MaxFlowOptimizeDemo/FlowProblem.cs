@@ -37,13 +37,13 @@ namespace MaxFlowOptimizeDemo
             return problem;
 
         }
-
         public Result CreateResult(double result, List<double> optimizedValues)
         {
             var x = commodities.SelectMany(commodity => edges.Select((edge,edgeIndex) => 
                 new OptimizedEdges(edge.Source,edge.Destination, commodity.CommodityName, optimizedValues.ElementAt(ComputeIndexInEdgeResult(edgeIndex,commodity.CommodityNumber, edges.Count)))));
             return new Result(result, x.ToList());
         }
+
         public IList<Row> GetRows() => rows;
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
 
@@ -84,6 +84,7 @@ namespace MaxFlowOptimizeDemo
                 var myCommodities = loadedProblem.CommoditiesSources.Sources.Where(x => x.Source == source).Select(xx => xx.Commodity);
                 var contained = commodities.Where(commo => myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
                 double weight = sourceEdges.First(x => x.edge.Source == source).edge.Weigth;
+
                 return RangeList(loadedProblem.Commodities.Number).
                     Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Number).ToArray(), 
                      contained.Contains(x)?weight:0, 'L'));

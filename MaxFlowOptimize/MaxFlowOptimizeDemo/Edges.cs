@@ -6,5 +6,8 @@ using System.Threading.Tasks;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record Edges(int EdgesNumber, List<Edge> EdgesDirection);
+    public record Edges(int EdgesNumber, List<Edge> EdgesDirection)
+    {
+        public Edges AddEdges(Edges EdgesToAdd) => new Edges(EdgesToAdd.EdgesNumber + EdgesNumber, EdgesDirection.Concat(EdgesToAdd.EdgesDirection).ToList());
+    }
 }
