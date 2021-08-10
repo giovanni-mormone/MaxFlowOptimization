@@ -9,11 +9,10 @@ using WrapperCoinMP;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record Result(double objective, List<double> edgesValues);
-
     class MaxFlowOptimizer : IFlowOptimizer
     {
         private WrapProblem problem;
+        private FlowProblem loadedProblem;
 
         public MaxFlowOptimizer(string problemName)
         {
@@ -22,35 +21,57 @@ namespace MaxFlowOptimizeDemo
         }
 
 
-        record test(int edges, int vertexes, int links, List<double> objectiveCoeffs, List<double> lowerBoundsCoeffs, List<double> upperBoundsCoeffs, List<int> matrixBegin, List<int> matrixCount, List<int> matrixIndexes, List<double> matrixValues);
 
         public void ReadFromJSON(string path)
         {
             var serializer = new JsonSerializer();
             //../../../problem.json se parte da visual studio per ora
-            using StreamReader file = File.OpenText("problem.json");
+            using StreamReader file = File.OpenText("../../../problem.json");
             using JsonTextReader reader = new JsonTextReader(file);
-            var result = serializer.Deserialize<test>(reader);
-            double[] objectiveCoeffs = ListToArray(result.objectiveCoeffs);
-            double[] upperbounds = ListToArray(result.upperBoundsCoeffs);
-            double[] lowerBoundsCoeffs = ListToArray(result.lowerBoundsCoeffs);
-            double[] upperBoundsCoeffs = ListToArray(result.upperBoundsCoeffs);
-            int[] matrixBegin = ListToArray(result.matrixBegin);
-            int[] matrixCount = ListToArray(result.matrixCount);
-            int[] matrixIndexes = ListToArray(result.matrixIndexes);
-            double[] matrixValues = ListToArray(result.matrixValues);
-            char[] rowType = CreateRepeatedArray('E',result.vertexes);
-            double[] rhsRows = CreateRHS(result.vertexes);
-            WrapperCoin.LoadProblem(problem, result.edges, result.vertexes, result.links, 0, WrapperCoin.SOLV_OBJSENS_MAX, 0, objectiveCoeffs, lowerBoundsCoeffs, upperBoundsCoeffs, rowType, rhsRows, null, matrixBegin, matrixCount, matrixIndexes, matrixValues
-           , null, null, "");
-            WrapperCoin.LoadInteger(problem, CreateRepeatedArray('I', result.vertexes));
-        }
-            
+            var jsonProblem = serializer.Deserialize<JsonProblem>(reader);
+            int numberOfVariables = jsonProblem.Edges.EdgesNumber * jsonProblem.Commodities.Number;
+            double objconst = 0.0;
+            int objsens = WrapperCoin.SOLV_OBJSENS_MAX;
+            double infinite = WrapperCoin.GetInfinity();
+            List<double> lowerBounds = Enumerable.Repeat(0.0, numberOfVariables).ToList();
+            List<double> upperBounds = Enumerable.Repeat(infinite, numberOfVariables).ToList();
+            List<int> matrixBegin = Enumerable.Repeat(0, numberOfVariables + 1).ToList();
+            List<int> matrixCount = Enumerable.Repeat(0, numberOfVariables).ToList();
+            loadedProblem = FlowProblem.InizializeProblem(jsonProblem);
+            double[] objectCoeffs = loadedProblem.GetObjectiveCoeffs();
 
-        public void addRow(List<double> values) => WrapperCoin.AddRow(ref problem, values.ToArray(), 0, 'E', "ff");
+            double[] n = Array.Empty<double>();
+            char[] c = Array.Empty<char>();
+            int[] i = Array.Empty<int>();
+            List<Row> rows = loadedProblem.GetRows().ToList();
+            WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
+                , null, null, "");
+            rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
+            /*WrapperCoin.AddRow(ref problem, new double[22] { 1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 1, 1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 1, 0, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, -1, -1, 0, 0, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, -1, -1, 0, 0 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, -1 }, 0, 'E', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 8, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 }, 8, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 }, 4, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }, 4, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 }, 4, 'L', "");
+            WrapperCoin.AddRow(ref problem, new double[22] { 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 }, 4, 'L', "");
+             */
+
+        }
+
+
+        public void AddRow(List<double> values) => WrapperCoin.AddRow(ref problem, values.ToArray(), 0, 'E', "ff");
  
 
-        public void nullifyRow(int row) => WrapperCoin.NullifyRow(problem, row);
+        public void NullifyRow(int row) => WrapperCoin.NullifyRow(problem, row);
         public Result OptimizeProblem()
         {
             WrapperCoin.OptimizeProblem(problem);
@@ -62,16 +83,11 @@ namespace MaxFlowOptimizeDemo
             double[] shadowPrice = new double[WrapperCoin.GetRowCount(problem)];
 
             WrapperCoin.GetSolutionValues(problem, edgesV, reducedCost, slackV, shadowPrice);
-            return new Result(result, edgesV.ToList());
+
+            return loadedProblem.CreateResult(result, edgesV.ToList());
         }
 
-        private char[] CreateRepeatedArray(char repeated, int rows) => Enumerable.Repeat(repeated, rows).ToArray();
-        private double[] CreateRHS(int rows) => Enumerable.Repeat(0.0, rows).ToArray();
-
-
-        private X[] ListToArray<X>(List<X> originList) => originList.ToArray();
-
-        public void addVertex(int numberEdges, List<double> objectiveCoeff, List<double> lowerBounds, List<double> upperBounds, List<double> values)
+        public void AddVertex(int numberEdges, List<double> objectiveCoeff, List<double> lowerBounds, List<double> upperBounds, List<double> values)
         {
             List<int> edges = Enumerable.Range(0, numberEdges).ToList();
             edges.ForEach(x => WrapperCoin.AddColumn(problem, objectiveCoeff.ElementAt(x), upperBounds.ElementAt(x), lowerBounds.ElementAt(x)));

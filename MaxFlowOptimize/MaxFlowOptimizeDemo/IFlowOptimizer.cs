@@ -10,9 +10,9 @@ namespace MaxFlowOptimizeDemo
     {
         void ReadFromJSON(string path);
         Result OptimizeProblem();
-        void nullifyRow(int row);
-        void addRow(List<double> values);
+        void NullifyRow(int row);
+        void AddRow(List<double> values);
 
-        void addVertex(int numberEdges, List<double> objectiveCoeff, List<double> lowerBounds, List<double> upperBounds, List<double> values);
+        void AddVertex(int numberEdges, List<double> objectiveCoeff, List<double> lowerBounds, List<double> upperBounds, List<double> values);
     }
 }
