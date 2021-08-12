@@ -6,5 +6,6 @@ using System.Threading.Tasks;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record CommoditiesSources(int Number, List<CommoditySource>Sources);
+    public record SinkSource(string Name, double Capacity);
+    
 }

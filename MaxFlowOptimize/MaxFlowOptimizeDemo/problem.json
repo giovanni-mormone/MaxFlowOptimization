@@ -1,102 +1,105 @@
-﻿/* PROBLEMA 2 -> https://complex-systems-ai.com/max-flow-problem/corrected-exercises-flow-problems/
-*/
-{
-  "Sources": {
-    "Number": 1,
-    "Names": [ "ss" ]
-  },
-  "Sinks": {
-    "Number": 1,
-    "Names": [ "t"]
-
-  },
-  "Nodes": {
-    "Number": 6,
-    "Names": [ "s","w", "x", "z", "y","tt" ]
-  },
-  "Commodities": {
-    "Number": 1,
-    "Names": [ "k"]
-  },
-  "CommoditiesSources": {
-    "Number": 1,
-    "Sources": [
-      {
-        "Source": "ss",
-        "Commodity": "k"
-      }
-
-    ]
-  },
-    "Edges": {
-      "EdgesNumber": 13,
-      "EdgesDirection": [
-        {
-          "Source": "ss",
-          "Destination": "s",
-          "Weigth": 30
-        },
-        {
-          "Source": "s",
-          "Destination": "w",
-          "Weigth": 4
-        },
-        {
-          "Source": "s",
-          "Destination": "x",
-          "Weigth": 7
-        },
-        {
-          "Source": "s",
-          "Destination": "z",
-          "Weigth": 10
-        },
-        {
-          "Source": "w",
-          "Destination": "y",
-          "Weigth": 2
-        },
-        {
-          "Source": "w",
-          "Destination": "tt",
-          "Weigth": 10
-        },
-        {
-          "Source": "x",
-          "Destination": "w",
-          "Weigth": 2
-        },
-        {
-          "Source": "x",
-          "Destination": "y",
-          "Weigth": 10
-        },
-        {
-          "Source": "x",
-          "Destination": "z",
-          "Weigth": 2
-        },
-        {
-          "Source": "z",
-          "Destination": "y",
-          "Weigth": 2
-        },
-        {
-          "Source": "z",
-          "Destination": "tt",
-          "Weigth": 6
-        },
-        {
-          "Source": "y",
-          "Destination": "tt",
-          "Weigth": 7
-        },
-        {
-          "Source": "tt",
-          "Destination": "t",
-          "Weigth": -1
-        }
-
-      ]
+﻿{
+  "Sources": [
+    {
+      "Name": "s1",
+      "Capacity": 35
+    },
+    {
+      "Name": "s2",
+      "Capacity": 15
     }
-  } 
+  ],
+  "Sinks": [
+    {
+      "Name": "t1",
+      "Capacity": -1
+    },
+    {
+      "Name": "t2",
+      "Capacity": -1
+    }
+  ],
+  "Nodes": [ "n1", "n2", "n3", "n4" ],
+  "Commodities": [ "k1", "k2" ],
+  "CommoditiesSources": [
+    {
+      "Source": "s1",
+      "Commodity": "k1"
+    },
+    {
+      "Source": "s2",
+      "Commodity": "k2"
+    }
+  ],
+  "CommoditiesSinks": [
+    {
+      "Sink": "t1",
+      "Commodity": "k2"
+    },
+    {
+      "Sink": "t2",
+      "Commodity": "k1"
+    },
+    {
+      "Sink": "t2",
+      "Commodity": "k2"
+    }
+  ],
+  "Edges": [
+    {
+      "Source": "s1",
+      "Destination": "n1",
+      "Weigth": -1
+    },
+    {
+      "Source": "s1",
+      "Destination": "n3",
+      "Weigth": -1
+    },
+    {
+      "Source": "s2",
+      "Destination": "n3",
+      "Weigth": -1
+    },
+    {
+      "Source": "n1",
+      "Destination": "n2",
+      "Weigth": 30
+    },
+    {
+      "Source": "n1",
+      "Destination": "n4",
+      "Weigth": 30
+    },
+    {
+      "Source": "n3",
+      "Destination": "n2",
+      "Weigth": 30
+    },
+    {
+      "Source": "n3",
+      "Destination": "n4",
+      "Weigth": 30
+    },
+    {
+      "Source": "n2",
+      "Destination": "t1",
+      "Weigth": -1
+    },
+    {
+      "Source": "n2",
+      "Destination": "t2",
+      "Weigth": -1
+    },
+    {
+      "Source": "n4",
+      "Destination": "t1",
+      "Weigth": -1
+    },
+    {
+      "Source": "n4",
+      "Destination": "t2",
+      "Weigth": -1
+    }
+  ]
+} 

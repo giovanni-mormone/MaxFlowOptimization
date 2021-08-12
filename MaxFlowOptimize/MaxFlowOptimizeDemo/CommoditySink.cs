@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record Pair(int Number, List<string> Names);
+    public record CommoditySink(string Sink, string Commodity);
 }

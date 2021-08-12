@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record JsonProblem(Pair Sources, Pair Sinks, Pair Nodes, Pair Commodities, CommoditiesSources CommoditiesSources, Edges Edges);
+    public record JsonProblem(HashSet<SinkSource> Sources, HashSet<SinkSource> Sinks, HashSet<string> Nodes, HashSet<string> Commodities, HashSet<CommoditySource> CommoditiesSources, HashSet<CommoditySink> CommoditiesSinks, HashSet<Edge> Edges);
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MaxFlowOptimizeDemo
 {
@@ -20,13 +18,14 @@ namespace MaxFlowOptimizeDemo
 
     public class FlowProblem
     {
-        private IList<string> nodes;
-        private IList<string> sources;
-        private IList<string> sinks;
-        private IList<double> objectiveCoeffs;
-        private IList<Edge> edges;
-        private IList<Row> rows;
-        private IList<Commodity> commodities;
+        private static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
+        private HashSet<string> nodes;
+        private HashSet<SinkSource> sources;
+        private HashSet<SinkSource> sinks;
+        private List<double> objectiveCoeffs;
+        private HashSet<Edge> edges;
+        private HashSet<Row> rows;
+        private HashSet<Commodity> commodities;
 
         public static FlowProblem InizializeProblem(JsonProblem loadedProblem)
         {
@@ -44,26 +43,26 @@ namespace MaxFlowOptimizeDemo
             return new Result(result, x.ToList());
         }
 
-        public IList<Row> GetRows() => rows;
+        public HashSet<Row> GetRows() => rows;
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
 
         private FlowProblem() { }
 
         private static readonly Func<int, List<double>> RepeatedZeroList = length => Enumerable.Repeat(0.0, length).ToList();
-        private static readonly Func<int, List<int>> RangeList = length => Enumerable.Range(0, length).ToList();
+        private static readonly Func<int, HashSet<int>> RangeList = length => Enumerable.Range(0, length).ToHashSet();
         private static readonly Func<int, int, int, int> ComputeIndexInEdgeResult = (edgeIndex, commodity, totalEdges ) => edgeIndex + totalEdges * commodity;
 
         private void InitializeNodesAndEdges(JsonProblem loaded) {
-            commodities = loaded.Commodities.Names.Select((name, id) => (name, id)).Select(x => new Commodity(x.name, x.id)).ToList();
-            sources = loaded.Sources.Names.ToList();
-            sinks = loaded.Sinks.Names.ToList();
-            nodes = loaded.Nodes.Names.ToList();
-            edges = RangeList(loaded.Edges.EdgesNumber).Select(x => loaded.Edges.EdgesDirection.ElementAt(x)).ToList();
+            commodities = loaded.Commodities.Select((name, id) => (name, id)).Select(x => new Commodity(x.name, x.id)).ToHashSet();
+            sources = loaded.Sources.ToHashSet();
+            sinks = loaded.Sinks.ToHashSet();
+            nodes = loaded.Nodes.ToHashSet();
+            edges = RangeList(loaded.Edges.Count).Select(x => loaded.Edges.ElementAt(x)).ToHashSet();
         }
         private void InitializeObjectiveCoeffs(JsonProblem loadedProblem) {
-            List<double> obj = RepeatedZeroList(loadedProblem.Edges.EdgesNumber)
-                .Select((x,y) => edges.Select((xx, yy) => loadedProblem.Sources.Names.Contains(xx.Source) ? yy : -1).Contains(y)?1.0:0.0).ToList();
-            objectiveCoeffs = RangeList(loadedProblem.Commodities.Number).SelectMany(_ => obj.ToList()).ToList();
+            List<double> obj = RepeatedZeroList(loadedProblem.Edges.Count)
+                .Select((x,y) => edges.Select((xx, yy) => loadedProblem.Sources.Select(x => x.Name).Contains(xx.Source) ? yy : -1).Contains(y)?1.0:0.0).ToList();
+            objectiveCoeffs = RangeList(loadedProblem.Commodities.Count).SelectMany(_ => obj.ToList()).ToList();
         }
         private void InitializeRows(JsonProblem loadedProblem)
         {
@@ -71,32 +70,42 @@ namespace MaxFlowOptimizeDemo
             {
                 var nodeEdges = edges.Select((edge, column) => (edge,column))
                     .Where(combo => combo.edge.Source == node || combo.edge.Destination == node).ToList();
-                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.EdgesNumber);
+                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
                 //se sono una sorgente vuol dire che esce il flusso da me -> -1; se sono destinazione entra -> 1
                 nodeEdges.ForEach(edge => rowCoeffs[edge.column] = edge.edge.Source == node ? -1 : 1);
-                return RangeList(loadedProblem.Commodities.Number).Select(x => new Row(CreateRow(rowCoeffs,x, loadedProblem.Commodities.Number).ToArray(),0,'E'));
-            }).ToList();
+                return RangeList(loadedProblem.Commodities.Count).Select(x => new Row(CreateRow(rowCoeffs,x, loadedProblem.Commodities.Count).ToArray(),0,'E'));
+            }).ToHashSet();
 
             rows = rows.Concat(sources.SelectMany(source => {
-                var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Source == source).ToList();
-                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.EdgesNumber);
+                var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Source == source.Name).ToList();
+                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
                 sourceEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
-                var myCommodities = loadedProblem.CommoditiesSources.Sources.Where(x => x.Source == source).Select(xx => xx.Commodity);
+                var myCommodities = loadedProblem.CommoditiesSources.Where(x => x.Source == source.Name).Select(xx => xx.Commodity);
                 var contained = commodities.Where(commo => myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
-                double weight = sourceEdges.First(x => x.edge.Source == source).edge.Weigth;
-
-                return RangeList(loadedProblem.Commodities.Number).
-                    Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Number).ToArray(), 
-                     contained.Contains(x)?weight:0, 'L'));
-            })).ToList();
+                double weight = source.Capacity == -1 ? INFINITY : source.Capacity;
+                return RangeList(loadedProblem.Commodities.Count).
+                    Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(),
+                     contained.Contains(x) ? weight : 0, 'L'));
+            })).ToHashSet();
+            rows = rows.Concat(sinks.SelectMany(sink => {
+                var sinkEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Destination == sink.Name).ToList();
+                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
+                sinkEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
+                var myCommodities = loadedProblem.CommoditiesSinks.Where(x => x.Sink == sink.Name).Select(xx => xx.Commodity);
+                var contained = commodities.Where(commo => myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
+                double weight = sink.Capacity == -1 ? INFINITY : sink.Capacity;
+                return RangeList(loadedProblem.Commodities.Count).
+                    Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(),
+                     contained.Contains(x) ? weight : 0, 'L'));
+            })).ToHashSet();
             rows = rows.Concat(nodes.SelectMany(node => 
                 edges.Select((edge, column) => (edge, column))
-                    .Where(combo => combo.edge.Source == node && !sinks.Contains(combo.edge.Destination))
+                    .Where(combo => combo.edge.Source == node && !sinks.Select(x => x.Name).Contains(combo.edge.Destination))
                     .Select(edge => 
-                        new Row(RangeList(loadedProblem.Commodities.Number).SelectMany(_ => RepeatedZeroList(loadedProblem.Edges.EdgesNumber)
+                        new Row(RangeList(loadedProblem.Commodities.Count).SelectMany(_ => RepeatedZeroList(loadedProblem.Edges.Count)
                             .Select((value, column) => column == edge.column ? 1 : value).ToList()).ToArray(), edge.edge.Weigth, 'L')
                 )
-            )).ToList();
+            )).ToHashSet();
         }
 
         private static List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
