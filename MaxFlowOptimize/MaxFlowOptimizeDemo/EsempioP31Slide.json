@@ -1,0 +1,86 @@
+﻿{
+  "Sources": [
+    {
+      "Name": "s1",
+      "Capacity": -1
+    }
+  ],
+  "Sinks": [
+    {
+      "Name": "t1",
+      "Capacity": -1
+    }
+  ],
+  "Nodes": [ "s", "a", "b", "c", "d","e","f","t" ],
+  "Commodities": [ "k1"],
+  "CommoditiesSources": [
+    {
+      "Source": "s1",
+      "Commodity": "k1"
+    }
+  ],
+  "CommoditiesSinks": [
+    {
+      "Sink": "t1",
+      "Commodity": "k1"
+    }
+  ],
+  "Edges": [
+    {
+      "Source": "s1",
+      "Destination": "s",
+      "Weigth": -1
+    },
+    {
+      "Source": "s",
+      "Destination": "a",
+      "Weigth": 8
+    },
+    {
+      "Source": "s",
+      "Destination": "b",
+      "Weigth": 5
+    },
+    {
+      "Source": "a",
+      "Destination": "c",
+      "Weigth": 9
+    },
+    {
+      "Source": "b",
+      "Destination": "e",
+      "Weigth": 5
+    },
+    {
+      "Source": "b",
+      "Destination": "d",
+      "Weigth": 6
+    },
+    {
+      "Source": "c",
+      "Destination": "e",
+      "Weigth": 2
+    },
+   
+    {
+      "Source": "d",
+      "Destination": "f",
+      "Weigth": 3
+    },
+    {
+      "Source": "e",
+      "Destination": "t",
+      "Weigth": 8
+    },
+    {
+      "Source": "f",
+      "Destination": "t",
+      "Weigth": 5
+    },
+    {
+      "Source": "t",
+      "Destination": "t1",
+      "Weigth": -1
+    }
+  ]
+} 
