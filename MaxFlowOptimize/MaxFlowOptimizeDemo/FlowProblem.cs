@@ -4,18 +4,35 @@ using System.Linq;
 
 namespace MaxFlowOptimizeDemo
 {
-    public record Result(double Objective, List<OptimizedEdges> EdgesResult) 
+    /// <summary>
+    /// Record that represents the result of an optimized problem.
+    /// </summary>
+    /// <param name="Objective">The <see cref="double"/> value representing the optimal value for the flow</param>
+    /// <param name="EdgesResult"> The <see cref="List{OptimizedEdge}"/> representing the optimal value of each edge.</param>
+    public record Result(double Objective, List<OptimizedEdge> EdgesResult) 
     {
         public override string ToString() => $"The optimized total flow value is {Objective}, and the edges optimized values are\n {PrintOptimizedList}";
 
         private string PrintOptimizedList => string.Join("\n", EdgesResult.Select(x => $"{x}").ToArray());
     }
 
-    public record OptimizedEdges(string Source, string Destination, string Commodity, double Value)
+    /// <summary>
+    /// A record used to represent the optimal value of an edge.
+    /// </summary>
+    /// <param name="Source">The <see cref="string"/> representing the source of the edge.</param>
+    /// <param name="Destination">The <see cref="string"/> representing the destination of the edge.</param>
+    /// <param name="Commodity">The <see cref="string"/> representing the commodity of the edge.</param>
+    /// <param name="Value">The <see cref="double"/> represeting the optimal value of the edge.</param>
+
+    public record OptimizedEdge(string Source, string Destination, string Commodity, double Value)
     {
         override public string ToString() => $"The source node is {Source}, the destination node is {Destination}, the commodity is {Commodity}, the optimized value for the edge is {Value}";
     }
 
+    /// <summary>
+    /// A class used to model a flow problem, using a <see cref="JsonProblem"/> as a source to create and model a flow
+    /// problem.
+    /// </summary>
     public class FlowProblem
     {
         private static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
@@ -27,6 +44,7 @@ namespace MaxFlowOptimizeDemo
         private HashSet<Row> rows;
         private HashSet<Commodity> commodities;
 
+        
         public static FlowProblem InizializeProblem(JsonProblem loadedProblem)
         {
             FlowProblem problem = new();
@@ -36,14 +54,29 @@ namespace MaxFlowOptimizeDemo
             return problem;
 
         }
+        /// <summary>
+        /// Method used to create a <see cref="Result"/> from the given parameters
+        /// </summary>
+        /// <param name="result"> The <see cref="double"/> result.</param>
+        /// <param name="optimizedValues"> The <see cref="List{double}"/> optimized values for each edge.</param>
+        /// <returns></returns>
         public Result CreateResult(double result, List<double> optimizedValues)
         {
             var x = commodities.SelectMany(commodity => edges.Select((edge,edgeIndex) => 
-                new OptimizedEdges(edge.Source,edge.Destination, commodity.CommodityName, optimizedValues.ElementAt(ComputeIndexInEdgeResult(edgeIndex,commodity.CommodityNumber, edges.Count)))));
+                new OptimizedEdge(edge.Source,edge.Destination, commodity.CommodityName, optimizedValues.ElementAt(ComputeIndexInEdgeResult(edgeIndex,commodity.CommodityNumber, edges.Count)))));
             return new Result(result, x.ToList());
         }
 
+        /// <summary>
+        /// Method used to get the <see cref="HashSet{T}"/> of <see cref="Row"/> representing the rows of the problem
+        /// loaded and parsed from the <<see cref="JsonProblem"/>.
+        /// </summary>
+        /// <returns>The <see cref="HashSet{T}"/> of <see cref="Row"/> of the problem.</returns>
         public HashSet<Row> GetRows() => rows;
+        /// <summary>
+        /// Method used to get the coeffs of the objective function of the flow problem to optimize.
+        /// </summary>
+        /// <returns>An <see cref="Array"/> of <see cref="double"/> representing the coeffs of the objective function.</returns>
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
 
         private FlowProblem() { }

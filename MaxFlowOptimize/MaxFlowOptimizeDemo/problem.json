@@ -2,11 +2,11 @@
   "Sources": [
     {
       "Name": "s1",
-      "Capacity": 35
+      "Capacity": 8
     },
     {
       "Name": "s2",
-      "Capacity": 15
+      "Capacity": 8
     }
   ],
   "Sinks": [
@@ -64,22 +64,22 @@
     {
       "Source": "n1",
       "Destination": "n2",
-      "Weigth": 30
+      "Weigth": 3
     },
     {
       "Source": "n1",
       "Destination": "n4",
-      "Weigth": 30
+      "Weigth": 3
     },
     {
       "Source": "n3",
       "Destination": "n2",
-      "Weigth": 30
+      "Weigth": 3
     },
     {
       "Source": "n3",
       "Destination": "n4",
-      "Weigth": 30
+      "Weigth": 3
     },
     {
       "Source": "n2",

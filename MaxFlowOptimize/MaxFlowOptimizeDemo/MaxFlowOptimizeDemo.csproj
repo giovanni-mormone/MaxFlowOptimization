@@ -7,12 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="WrapperCoinMP">
-      <HintPath>..\WrapperCoinMP.dll</HintPath>
-    </Reference>
+    <PackageReference Include="WrapperCoinMP" Version="1.1.0" />
   </ItemGroup>
 
 </Project>

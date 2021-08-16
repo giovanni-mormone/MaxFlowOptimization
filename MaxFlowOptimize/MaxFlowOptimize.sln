@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30709.132
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFlowOptimize", "MaxFlowOptimize\MaxFlowOptimize.csproj", "{8D05A14A-7246-4BE8-B005-B58827846D46}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaxFlowOptimizeDemo", "MaxFlowOptimizeDemo\MaxFlowOptimizeDemo.csproj", "{6FFD8D47-4112-4A5D-8466-4636EBBBF317}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaxFlowOptimizeDemo", "MaxFlowOptimizeDemo\MaxFlowOptimizeDemo.csproj", "{6FFD8D47-4112-4A5D-8466-4636EBBBF317}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8D05A14A-7246-4BE8-B005-B58827846D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D05A14A-7246-4BE8-B005-B58827846D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D05A14A-7246-4BE8-B005-B58827846D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D05A14A-7246-4BE8-B005-B58827846D46}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6FFD8D47-4112-4A5D-8466-4636EBBBF317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6FFD8D47-4112-4A5D-8466-4636EBBBF317}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FFD8D47-4112-4A5D-8466-4636EBBBF317}.Release|Any CPU.ActiveCfg = Release|Any CPU

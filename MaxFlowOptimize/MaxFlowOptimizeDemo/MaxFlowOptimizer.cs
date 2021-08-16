@@ -7,6 +7,9 @@ using WrapperCoinMP;
 
 namespace MaxFlowOptimizeDemo
 {
+    /// <summary>
+    /// Basic implementation of the <see cref="IFlowOptimizer"/> interface.
+    /// </summary>
     class MaxFlowOptimizer : IFlowOptimizer
     {
         private WrapProblem problem;
@@ -24,10 +27,9 @@ namespace MaxFlowOptimizeDemo
         public void SaveToJSON(string path)
         {
             var serializer = new JsonSerializer();
-            StreamWriter file = File.CreateText(path);
-            JsonTextWriter writer = new JsonTextWriter(file);
+            using StreamWriter file = File.CreateText(path);
+            using JsonTextWriter writer = new JsonTextWriter(file);
             serializer.Serialize(writer, actualProblem);
-            file.Close();
         }
         public void ReadFromJSON(string path)
         {
@@ -38,15 +40,17 @@ namespace MaxFlowOptimizeDemo
             var jsonProblem = serializer.Deserialize<JsonProblem>(reader);
             actualProblem = jsonProblem;
             InitializeWrapperProblem(jsonProblem);
-            file.Close();
         }
 
         public void AddNode(string Name, HashSet<Edge> Edges)
         {
-            actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
-                actualProblem.Nodes.Append(Name).ToHashSet(),
-                actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks, actualProblem.Edges.Concat(Edges).ToHashSet());
-            RecreateProblem();
+            if (!actualProblem.Nodes.Contains(Name))
+            {
+               actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
+               actualProblem.Nodes.Append(Name).ToHashSet(),
+               actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks, actualProblem.Edges.Concat(Edges).ToHashSet());
+               RecreateProblem();
+            }
         }
 
         public void RemoveNode(string Name)
@@ -63,7 +67,8 @@ namespace MaxFlowOptimizeDemo
 
         public void AddEdge(Edge Edge)
         {
-            if ((actualProblem.Nodes.Contains(Edge.Source) || actualProblem.Sources.Select(x => x.Name).Contains(Edge.Source) && actualProblem.Nodes.Contains(Edge.Destination)))
+            if ((actualProblem.Nodes.Contains(Edge.Source) || actualProblem.Sources.Any(x => x.Name == Edge.Source)) && 
+                (actualProblem.Nodes.Contains(Edge.Destination) || actualProblem.Sinks.Any(x => x.Name == Edge.Destination)))
             {
                 actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
                     actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
@@ -86,45 +91,54 @@ namespace MaxFlowOptimizeDemo
 
         public void AddSource(SinkSource Source, List<string> Commodities)
         {
-            var x = Commodities.Where(xx => actualProblem.Commodities.Contains(xx)).Select(x => new CommoditySource(Source.Name, x));
-            actualProblem = new JsonProblem(actualProblem.Sources.Append(Source).ToHashSet(), actualProblem.Sinks,
-                   actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Concat(x).ToHashSet(), actualProblem.CommoditiesSinks,
-                   actualProblem.Edges);
-            RecreateProblem();
-        }
-        public void RemoveSource(string source)
-        {
-            if (actualProblem.Sources.Select(x => x.Name).Contains(source))
+            if (actualProblem.Sources.Any( x => x.Name !=Source.Name) && Commodities.Any(x => actualProblem.Commodities.Contains(x)))
             {
-                actualProblem = new JsonProblem(actualProblem.Sources.Where(x => !x.Name.Equals(source)).ToHashSet(), actualProblem.Sinks,
-                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Where(x => !x.Source.Equals(source)).ToHashSet(), actualProblem.CommoditiesSinks,
-                 actualProblem.Edges.Where(x => !x.Source.Equals(source)).ToHashSet());
+                var x = Commodities.Where(xx => actualProblem.Commodities.Contains(xx)).Select(x => new CommoditySource(Source.Name, x));
+                actualProblem = new JsonProblem(actualProblem.Sources.Append(Source).ToHashSet(), actualProblem.Sinks,
+                       actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Concat(x).ToHashSet(), actualProblem.CommoditiesSinks,
+                       actualProblem.Edges);
+                RecreateProblem();
+            }
+        }
+        public void RemoveSource(string Source)
+        {
+            if (actualProblem.Sources.Any(x => x.Name == Source))
+            {
+                actualProblem = new JsonProblem(actualProblem.Sources.Where(x => !x.Name.Equals(Source)).ToHashSet(), actualProblem.Sinks,
+                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Where(x => !x.Source.Equals(Source)).ToHashSet(), actualProblem.CommoditiesSinks,
+                 actualProblem.Edges.Where(x => !x.Source.Equals(Source)).ToHashSet());
                 RecreateProblem();
             }
         }
         public void AddSink(SinkSource Sink, List<string> Commodities)
         {
-            var x = Commodities.Where(xx => actualProblem.Commodities.Contains(xx)).Select(x => new CommoditySink(Sink.Name, x));
-            actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks.Append(Sink).ToHashSet(),
-                   actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Concat(x).ToHashSet(),
-                   actualProblem.Edges);
-            RecreateProblem();
-        }
-        public void RemoveSink(string sink)
-        {
-            if (actualProblem.Sinks.Select(x => x.Name).Contains(sink))
+            if (actualProblem.Sinks.Any(x => x.Name != Sink.Name) && Commodities.Any(x => actualProblem.Commodities.Contains(x)))
             {
-                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks.Where(x => !x.Name.Equals(sink)).ToHashSet(),
-                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Where(x => !x.Sink.Equals(sink)).ToHashSet(),
-                 actualProblem.Edges.Where(x => !x.Destination.Equals(sink)).ToHashSet());
+                var x = Commodities.Where(xx => actualProblem.Commodities.Contains(xx)).Select(x => new CommoditySink(Sink.Name, x));
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks.Append(Sink).ToHashSet(),
+                       actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Concat(x).ToHashSet(),
+                       actualProblem.Edges);
+                RecreateProblem();
+            }
+            
+        }
+        public void RemoveSink(string Sink)
+        {
+            if (actualProblem.Sinks.Any(x => x.Name == Sink))
+            {
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks.Where(x => !x.Name.Equals(Sink)).ToHashSet(),
+                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Where(x => !x.Sink.Equals(Sink)).ToHashSet(),
+                 actualProblem.Edges.Where(x => !x.Destination.Equals(Sink)).ToHashSet());
                 RecreateProblem();
             }
         }
         public void AddCommodity(string Commodity) => actualProblem.Commodities.Add(Commodity);
-
+        
         public void RemoveCommodity(string Commodity)
         {
             if (actualProblem.Commodities.Remove(Commodity)){
+                CheckIfLastCommoditySource(Commodity);
+                CheckIfLastCommoditySink(Commodity);
                 actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Where(x => !x.Commodity.Equals(Commodity)).ToHashSet(),
                 actualProblem.CommoditiesSinks.Where(x => !x.Commodity.Equals(Commodity)).ToHashSet(), actualProblem.Edges);
@@ -134,25 +148,48 @@ namespace MaxFlowOptimizeDemo
 
         public void AddCommodityToSource(string Source, string Commodity)
         {
-            if(actualProblem.Sources.Select(x => x.Name).Contains(Source) && actualProblem.Commodities.Contains(Commodity))
+            if(actualProblem.Sources.Any(x => x.Name == Source) && actualProblem.Commodities.Contains(Commodity))
             {
                 actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
                 actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Append(new CommoditySource(Source, Commodity)).ToHashSet(),
-                actualProblem.CommoditiesSinks.Append(new CommoditySink(Source, Commodity)).ToHashSet(), actualProblem.Edges);
+                actualProblem.CommoditiesSinks, actualProblem.Edges);
                 RecreateProblem();
             }
         }
         public void RemoveCommodityFromSource(string Source, string Commodity)
         {
-
+            if(actualProblem.CommoditiesSources.Any(x => x.Commodity == Commodity && x.Source == Source))
+            {
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
+                actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Where(x => !(x.Source == Source && x.Commodity == Commodity)).ToHashSet(),
+                actualProblem.CommoditiesSinks, actualProblem.Edges);
+                CheckIfLastCommoditySource(Commodity);
+                RecreateProblem();
+            }
         }
 
-        private void RecreateProblem()
+        public void AddCommodityToSink(string Sink, string Commodity)
         {
-            problem = WrapperCoin.CreateProblem(WrapperCoin.GetProblemName(problem));
-            InitializeWrapperProblem(actualProblem);
-        } 
-
+            if (actualProblem.Sinks.Any(x => x.Name == Sink) && actualProblem.Commodities.Contains(Commodity))
+            {
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
+                actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources,
+                actualProblem.CommoditiesSinks.Append(new CommoditySink(Sink, Commodity)).ToHashSet(), actualProblem.Edges);
+                CheckIfLastCommoditySink(Commodity);
+                RecreateProblem();
+            }
+        }
+        public void RemoveCommodityFromSink(string Sink, string Commodity)
+        {
+            if (actualProblem.CommoditiesSinks.Any(x => x.Commodity == Commodity && x.Sink == Sink))
+            {
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
+                actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources,
+                actualProblem.CommoditiesSinks.Where(x => !(x.Sink == Sink && x.Commodity == Commodity)).ToHashSet(), actualProblem.Edges);
+                RecreateProblem();
+            }
+        }
+        
         public Result OptimizeProblem()
         {
             WrapperCoin.OptimizeProblem(problem);
@@ -189,6 +226,33 @@ namespace MaxFlowOptimizeDemo
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
         }
-        
+
+        private void RecreateProblem()
+        {
+            problem = WrapperCoin.CreateProblem(WrapperCoin.GetProblemName(problem));
+            InitializeWrapperProblem(actualProblem);
+        }
+        private void CheckIfLastCommoditySource(string Commodity)
+        {
+            actualProblem.Sources.ToList().ForEach(x => {
+                if (!actualProblem.CommoditiesSources.Any(xx => xx.Source == x.Name && xx.Commodity != Commodity))
+                {
+                    RemoveSource(x.Name);
+                }
+            });
+        }
+        private void CheckIfLastCommoditySink(string Commodity)
+        {
+            actualProblem.Sinks.ToList().ForEach(x =>
+            {
+                if (!actualProblem.CommoditiesSinks.Any(xx => xx.Sink == x.Name && xx.Commodity != Commodity))
+                {
+                    RemoveSink(x.Name);
+                }
+            });
+        }
+
+
+
     }
 }
