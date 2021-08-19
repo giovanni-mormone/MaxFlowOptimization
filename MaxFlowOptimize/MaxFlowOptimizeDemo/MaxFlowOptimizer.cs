@@ -31,6 +31,8 @@ namespace MaxFlowOptimizeDemo
             using JsonTextWriter writer = new JsonTextWriter(file);
             serializer.Serialize(writer, actualProblem);
         }
+
+        public void SaveMPS(string path) => WrapperCoin.WriteMPSFile(problem, path);
         public void ReadFromJSON(string path)
         {
             var serializer = new JsonSerializer();
