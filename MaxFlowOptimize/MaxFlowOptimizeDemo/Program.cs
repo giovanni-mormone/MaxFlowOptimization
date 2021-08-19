@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaxFlowOptimizeDemo.result;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,12 +10,12 @@ namespace MaxFlowOptimizeDemo
 	{
 		static int Main()
 		{
-			IFlowOptimizer flowOptimizer = new MaxFlowOptimizer("MaxFlow");
-			flowOptimizer.ReadFromJSON("../../../problem.json");
+			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblem());
+			flowOptimizer.ReadFromJSON("../../../Resources/problem.json");
 			Result result = flowOptimizer.OptimizeProblem();
 			Console.WriteLine(result);
-			flowOptimizer.SaveToJSON("../../../modified.json");
-			flowOptimizer.SaveMPS("loadedProblem");
+			flowOptimizer.SaveToJSON("../../../Resources/modified.json");
+			flowOptimizer.SaveMPS("../../../Resources/loadedProblem");
 			return 0;
 		}
 	}

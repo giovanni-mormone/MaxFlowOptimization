@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
 
-namespace MaxFlowOptimizeDemo
 {
     /// <summary>
     /// The record used to model a row of the problem. It is based on the sintax needed by the <see cref="WrapperCoinMP.WrapperCoin"/> add row method.

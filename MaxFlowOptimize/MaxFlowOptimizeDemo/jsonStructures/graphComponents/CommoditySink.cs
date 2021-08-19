@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
 
-namespace MaxFlowOptimizeDemo
 {
     /// <summary>
     /// Record used to represent a pair of a Sink and a Commodity, read from the json of the problem.

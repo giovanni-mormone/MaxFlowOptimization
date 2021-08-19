@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
 
-namespace MaxFlowOptimizeDemo
 {
     /// <summary>
     /// The record used to represent a pair of Source/Sink and its capacity.

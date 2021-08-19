@@ -1,39 +1,18 @@
-﻿using System;
+﻿using MaxFlowOptimizeDemo.jsonStructures;
+using MaxFlowOptimizeDemo.jsonStructures.graphComponents;
+using MaxFlowOptimizeDemo.result;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace MaxFlowOptimizeDemo
 {
-    /// <summary>
-    /// Record that represents the result of an optimized problem.
-    /// </summary>
-    /// <param name="Objective">The <see cref="double"/> value representing the optimal value for the flow</param>
-    /// <param name="EdgesResult"> The <see cref="List{OptimizedEdge}"/> representing the optimal value of each edge.</param>
-    public record Result(double Objective, List<OptimizedEdge> EdgesResult) 
-    {
-        public override string ToString() => $"The optimized total flow value is {Objective}, and the edges optimized values are\n {PrintOptimizedList}";
-
-        private string PrintOptimizedList => string.Join("\n", EdgesResult.Select(x => $"{x}").ToArray());
-    }
-
-    /// <summary>
-    /// A record used to represent the optimal value of an edge.
-    /// </summary>
-    /// <param name="Source">The <see cref="string"/> representing the source of the edge.</param>
-    /// <param name="Destination">The <see cref="string"/> representing the destination of the edge.</param>
-    /// <param name="Commodity">The <see cref="string"/> representing the commodity of the edge.</param>
-    /// <param name="Value">The <see cref="double"/> represeting the optimal value of the edge.</param>
-
-    public record OptimizedEdge(string Source, string Destination, string Commodity, double Value)
-    {
-        override public string ToString() => $"The source node is {Source}, the destination node is {Destination}, the commodity is {Commodity}, the optimized value for the edge is {Value}";
-    }
-
+    
     /// <summary>
     /// A class used to model a flow problem, using a <see cref="JsonProblem"/> as a source to create and model a flow
     /// problem.
     /// </summary>
-    public class FlowProblem
+    public class FlowProblem : IFlowProblem
     {
         private static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
         private HashSet<string> nodes;
@@ -45,13 +24,11 @@ namespace MaxFlowOptimizeDemo
         private HashSet<Commodity> commodities;
 
         
-        public static FlowProblem InizializeProblem(JsonProblem loadedProblem)
+        public void InizializeProblem(JsonProblem loadedProblem)
         {
-            FlowProblem problem = new();
-            problem.InitializeNodesAndEdges(loadedProblem);
-            problem.InitializeObjectiveCoeffs(loadedProblem);
-            problem.InitializeRows(loadedProblem);
-            return problem;
+            InitializeNodesAndEdges(loadedProblem);
+            InitializeObjectiveCoeffs(loadedProblem);
+            InitializeRows(loadedProblem);
 
         }
         /// <summary>
@@ -78,8 +55,6 @@ namespace MaxFlowOptimizeDemo
         /// </summary>
         /// <returns>An <see cref="Array"/> of <see cref="double"/> representing the coeffs of the objective function.</returns>
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
-
-        private FlowProblem() { }
 
         private static readonly Func<int, List<double>> RepeatedZeroList = length => Enumerable.Repeat(0.0, length).ToList();
         private static readonly Func<int, HashSet<int>> RangeList = length => Enumerable.Range(0, length).ToHashSet();

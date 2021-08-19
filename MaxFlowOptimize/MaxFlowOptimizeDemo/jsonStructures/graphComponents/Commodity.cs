@@ -1,4 +1,4 @@
-﻿namespace MaxFlowOptimizeDemo
+﻿namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
 {
     /// <summary>
     /// Record used to represent a commodity, read from a json file.

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
 
-namespace MaxFlowOptimizeDemo
 {
     /// <summary>
     /// A Class used to Represent an edge of the flow problem to be resolved.

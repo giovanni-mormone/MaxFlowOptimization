@@ -1,10 +1,7 @@
-﻿using System;
+﻿using MaxFlowOptimizeDemo.jsonStructures.graphComponents;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MaxFlowOptimizeDemo
+namespace MaxFlowOptimizeDemo.jsonStructures
 {
     /// <summary>
     /// Record used to read and deserialize the data from a json file.
