@@ -217,6 +217,14 @@ namespace MaxFlowOptimizeDemo
             serializer.Serialize(writer, actualProblem);
         }
 
+        public void SaveResult(string path)
+        {
+            var serializer = new JsonSerializer();
+            using StreamWriter file = File.CreateText(path);
+            using JsonTextWriter writer = new JsonTextWriter(file);
+            serializer.Serialize(writer, OptimizeProblem());
+        }
+
         private void CheckIfLastCommoditySource(string Commodity)
         {
             actualProblem.Sources.ToList().ForEach(x => {

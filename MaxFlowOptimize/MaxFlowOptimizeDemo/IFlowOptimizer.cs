@@ -23,6 +23,12 @@ namespace MaxFlowOptimizeDemo
         /// is going to be written</param>
         void SaveToJSON(string path);
         /// <summary>
+        /// Method used to write the result of the optimized problem to the json file specified in the path parameter.
+        /// </summary>
+        /// <param name="path"> a <see cref="string"/> used to represent the path where the json file 
+        /// is going to be written</param>
+        void SaveResult(string path);
+        /// <summary>
         /// Method used to write the loaded problem to the MPS file specified in the path parameter.
         /// </summary>
         /// <param name="path"> a <see cref="string"/> used to represent the path where the MPS file 
@@ -128,5 +134,6 @@ namespace MaxFlowOptimizeDemo
         /// <param name="Sink">The <see cref="string"/> the name of the sink from which the commodity is going to be removed.</param>
         /// <param name="Commodity"> The <see cref="string"/> commodity that is going to be remove from the given sink.</param>
         void RemoveCommodityFromSink(string Sink, string Commodity);
+
     }
 }
