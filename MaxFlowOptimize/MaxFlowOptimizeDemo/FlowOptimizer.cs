@@ -18,7 +18,13 @@ namespace MaxFlowOptimizeDemo
         private WrapProblem problem;
         private JsonProblem actualProblem;
         private readonly IFlowProblem flow;
+        private Result actualResult;
 
+        /// <summary>
+        /// Constructor of a flow optimizer;
+        /// </summary>
+        /// <param name="problemName">The name of the problem, param needed by the <see cref="WrapperCoinMP"/> wrapper</param>
+        /// <param name="Flow"> The <see cref="IFlowProblem"/> implementation used to optimize the problem.</param>
         public FlowOptimizer(string problemName, IFlowProblem Flow)
         {
             WrapperCoin.InitSolver();
@@ -59,6 +65,18 @@ namespace MaxFlowOptimizeDemo
                 actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
                     actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                     actualProblem.Edges.Append(Edge).ToHashSet());
+                RecreateProblem();
+            }
+        }
+
+        public void UpdateEdge(Edge Edge)
+        {
+            if (actualProblem.Edges.Contains(Edge))
+            {
+               
+                actualProblem = new JsonProblem(actualProblem.Sources, actualProblem.Sinks,
+                    actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
+                    actualProblem.Edges.Select(edge => edge.Equals(Edge) ? Edge : edge).ToHashSet());
                 RecreateProblem();
             }
         }
@@ -110,9 +128,11 @@ namespace MaxFlowOptimizeDemo
             double[] shadowPrice = new double[WrapperCoin.GetRowCount(problem)];
 
             WrapperCoin.GetSolutionValues(problem, edgesV, reducedCost, slackV, shadowPrice);
-
-            return flow.CreateResult(result, edgesV.ToList());
+            actualResult =flow.CreateResult(result, edgesV.ToList());
+            return actualResult;
         }
+
+        public void PrintProblemRows() => flow.GetRows().ToList().ForEach(x => Console.WriteLine(x));
 
         public void ReadFromJSON(string path)
         {
@@ -222,7 +242,7 @@ namespace MaxFlowOptimizeDemo
             var serializer = new JsonSerializer();
             using StreamWriter file = File.CreateText(path);
             using JsonTextWriter writer = new JsonTextWriter(file);
-            serializer.Serialize(writer, OptimizeProblem());
+            serializer.Serialize(writer, actualResult);
         }
 
         private void CheckIfLastCommoditySource(string Commodity)
@@ -261,6 +281,7 @@ namespace MaxFlowOptimizeDemo
             List<double> upperBounds = Enumerable.Repeat(infinite, numberOfVariables).ToList();
             List<int> matrixBegin = Enumerable.Repeat(0, numberOfVariables + 1).ToList();
             List<int> matrixCount = Enumerable.Repeat(0, numberOfVariables).ToList();
+            List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
             double[] n = Array.Empty<double>();
             char[] c = Array.Empty<char>();
             int[] i = Array.Empty<int>();
@@ -271,6 +292,7 @@ namespace MaxFlowOptimizeDemo
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
+            WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
     }

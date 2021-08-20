@@ -12,11 +12,11 @@
   "Sinks": [
     {
       "Name": "t1",
-      "Capacity": -1
+      "Capacity": 56
     },
     {
       "Name": "t2",
-      "Capacity": -1
+      "Capacity": 47
     }
   ],
   "Nodes": [ "n1", "n2", "n3", "n4" ],
@@ -27,11 +27,23 @@
       "Commodity": "k1"
     },
     {
+      "Source": "s1",
+      "Commodity": "k2"
+    },
+    {
+      "Source": "s2",
+      "Commodity": "k1"
+    },
+    {
       "Source": "s2",
       "Commodity": "k2"
     }
   ],
   "CommoditiesSinks": [
+    {
+      "Sink": "t1",
+      "Commodity": "k1"
+    },
     {
       "Sink": "t1",
       "Commodity": "k2"
@@ -64,22 +76,22 @@
     {
       "Source": "n1",
       "Destination": "n2",
-      "Weigth": 3
+      "Weigth": 26
     },
     {
       "Source": "n1",
       "Destination": "n4",
-      "Weigth": 3
+      "Weigth": 19
     },
     {
       "Source": "n3",
       "Destination": "n2",
-      "Weigth": 3
+      "Weigth": 22
     },
     {
       "Source": "n3",
       "Destination": "n4",
-      "Weigth": 3
+      "Weigth": 19
     },
     {
       "Source": "n2",

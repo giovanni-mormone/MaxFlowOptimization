@@ -47,6 +47,12 @@ namespace MaxFlowOptimizeDemo
         /// and the destination is either a sink or a node. If an edge is already present between source and destination it does nothing</param>
         void AddEdge(Edge Edge);
         /// <summary>
+        /// Method used to update an edge of the problem
+        /// </summary>
+        /// <param name="Edge">The <see cref="Edge"/> to be updated to the problem. It only updates an edge if the 
+        /// the edge is present in the problem. If an edge is not already present it does nothing</param>
+        void UpdateEdge(Edge Edge);
+        /// <summary>
         /// Method used to remove an edge from the problem
         /// </summary>
         /// <param name="Edge">The <see cref="Edge"/> to be removed from the problem. If the edge does not exist, it does
@@ -134,6 +140,8 @@ namespace MaxFlowOptimizeDemo
         /// <param name="Sink">The <see cref="string"/> the name of the sink from which the commodity is going to be removed.</param>
         /// <param name="Commodity"> The <see cref="string"/> commodity that is going to be remove from the given sink.</param>
         void RemoveCommodityFromSink(string Sink, string Commodity);
+
+        void PrintProblemRows();
 
     }
 }
