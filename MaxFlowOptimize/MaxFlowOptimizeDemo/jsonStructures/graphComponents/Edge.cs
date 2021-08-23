@@ -12,7 +12,7 @@ namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
         /// <summary>
         /// The Weigth of the edge
         /// </summary>
-        public readonly int Weigth;
+        public readonly double Weigth;
         /// <summary>
         /// The  Source node of the edge
         /// </summary>

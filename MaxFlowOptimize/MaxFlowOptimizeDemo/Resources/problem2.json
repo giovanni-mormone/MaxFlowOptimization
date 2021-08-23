@@ -1,72 +1,54 @@
 ﻿{
-  "Sources": [
-    {
-      "Name": "s1",
-      "Capacity": 100
-    },
-    {
-      "Name": "s2",
-      "Capacity": 100
-    },
-    {
-      "Name": "s3",
-      "Capacity": 100
-    }
-  ],
-  "Sinks": [
-    {
-      "Name": "t1",
-      "Capacity": 2000
-    },
-    {
-      "Name": "t2",
-      "Capacity": 2000
-    },
-    {
-      "Name": "t3",
-      "Capacity": 2000
-    }
-  ],
+ 
   "Nodes": [ "n1", "n2", "n3", "n4","n5","n6","n7","n8" ],
   "Commodities": [ "k1", "k2" ],
   "CommoditiesSources": [
     {
-      "Source": "s1",
-      "Commodity": "k1"
+      "Name": "s1",
+      "Commodity": "k1",
+      "Capacity": 56
     },
     {
-      "Source": "s1",
-      "Commodity": "k2"
+      "Name": "s1",
+      "Commodity": "k2",
+      "Capacity": 100
     },
     {
-      "Source": "s2",
-      "Commodity": "k1"
+      "Name": "s2",
+      "Commodity": "k1",
+      "Capacity": 165
     },
     {
-      "Source": "s3",
-      "Commodity": "k2"
+      "Name": "s3",
+      "Commodity": "k2",
+      "Capacity": 93
     }
   ],
   "CommoditiesSinks": [
     {
-      "Sink": "t1",
-      "Commodity": "k1"
+      "Name": "t1",
+      "Commodity": "k1",
+      "Capacity": 2000
     },
     {
-      "Sink": "t1",
-      "Commodity": "k2"
+      "Name": "t1",
+      "Commodity": "k2",
+      "Capacity": 2000
     },
     {
-      "Sink": "t2",
-      "Commodity": "k1"
+      "Name": "t2",
+      "Commodity": "k1",
+      "Capacity": 2000
     },
     {
-      "Sink": "t2",
-      "Commodity": "k2"
+      "Name": "t2",
+      "Commodity": "k2",
+      "Capacity": 2000
     },
     {
-      "Sink": "t3",
-      "Commodity": "k2"
+      "Name": "t3",
+      "Commodity": "k2",
+      "Capacity": 2000
     }
   ],
   "Edges": [

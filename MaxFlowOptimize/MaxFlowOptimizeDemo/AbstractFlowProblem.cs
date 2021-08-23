@@ -16,8 +16,8 @@ namespace MaxFlowOptimizeDemo
     {
         protected static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
         protected HashSet<string> nodes;
-        protected HashSet<SinkSource> sources;
-        protected HashSet<SinkSource> sinks;
+        protected HashSet<CommoditySourceSink> sources;
+        protected HashSet<CommoditySourceSink> sinks;
         protected List<double> objectiveCoeffs;
         protected HashSet<Edge> edges;
         protected HashSet<Row> rows;
@@ -62,8 +62,8 @@ namespace MaxFlowOptimizeDemo
 
         private void InitializeNodesAndEdges(JsonProblem loaded) {
             commodities = loaded.Commodities.Select((name, id) => (name, id)).Select(x => new Commodity(x.name, x.id)).ToHashSet();
-            sources = loaded.Sources.ToHashSet();
-            sinks = loaded.Sinks.ToHashSet();
+            sources = loaded.CommoditiesSources.ToHashSet();
+            sinks = loaded.CommoditiesSinks.ToHashSet();
             nodes = loaded.Nodes.ToHashSet();
             edges = RangeList(loaded.Edges.Count).Select(x => loaded.Edges.ElementAt(x)).ToHashSet();
         }

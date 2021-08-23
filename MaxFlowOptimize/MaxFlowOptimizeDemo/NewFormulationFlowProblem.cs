@@ -22,7 +22,7 @@ namespace MaxFlowOptimizeDemo
         protected override void InitializeObjectiveCoeffs(JsonProblem loadedProblem)
         {
             List<double> obj = RepeatedZeroList(loadedProblem.Edges.Count)
-                                       .Select((x, y) => edges.Select((xx, yy) => loadedProblem.Sinks.Select(x => x.Name).Contains(xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
+                                       .Select((x, y) => edges.Select((xx, yy) => loadedProblem.CommoditiesSinks.Select(x => x.Name).Contains(xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
             objectiveCoeffs = RangeList(loadedProblem.Commodities.Count).SelectMany(_ => obj.ToList()).ToList();
         }
 
@@ -33,7 +33,7 @@ namespace MaxFlowOptimizeDemo
                 var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Source == source.Name).ToList();
                 var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
                 sourceEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
-                var myCommodities = loadedProblem.CommoditiesSources.Where(x => x.Source == source.Name).Select(xx => xx.Commodity);
+                var myCommodities = loadedProblem.CommoditiesSources.Where(x => x.Name == source.Name).Select(xx => xx.Commodity);
                 var contained = commodities.Where(commo => myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
                 double weigth = source.Capacity == -1 ? INFINITY : source.Capacity;
                 return RangeList(loadedProblem.Commodities.Count).
@@ -45,7 +45,7 @@ namespace MaxFlowOptimizeDemo
                 var sinkEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Destination == sink.Name).ToList();
                 var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
                 sinkEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
-                var myCommodities = loadedProblem.CommoditiesSinks.Where(x => x.Sink == sink.Name).Select(xx => xx.Commodity);
+                var myCommodities = loadedProblem.CommoditiesSinks.Where(x => x.Name == sink.Name).Select(xx => xx.Commodity);
                 var contained = commodities.Where(commo => myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
                 double weigth = sink.Capacity == -1 ? INFINITY : sink.Capacity;
                 return RangeList(loadedProblem.Commodities.Count).
