@@ -22,23 +22,28 @@ namespace MaxFlowOptimizeDemo
                            .Select((x, y) => edges.Select((xx, yy) => loadedProblem.CommoditiesSources.Select(x => x.Name).Contains(xx.Source) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
             objectiveCoeffs = RangeList(loadedProblem.Commodities.Count).SelectMany(_ => obj.ToList()).ToList();
         }
-        private HashSet<Row> jaja(JsonProblem loadedProblem)
+        private HashSet<Row> jaja(JsonProblem loadedProblem,bool fonte, Func<JsonProblem, CommoditySourceSink, List<string>> pedrito, Func<Edge, string, bool> perez)
         { 
             HashSet<Row> _jaja(List<CommoditySourceSink> sources, HashSet<Row> rowRecursive)=> sources switch
             {
                 (CommoditySourceSink source, _) when sources.Count==1 =>
-                          rowRecursive.Append(InitializeRows2(Metodino(loadedProblem, source))).Concat(InitializeRows3(Metodino(loadedProblem, source))).ToHashSet(),
+                          rowRecursive.Append(InitializeRows2(Metodino(loadedProblem, source, perez)))
+                          .Concat(InitializeRows3(Metodino(loadedProblem, source, perez), pedrito)).ToHashSet(),
                 (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name==tail.First().Name=>
-                        _jaja(tail, rowRecursive.Append(InitializeRows2(Metodino(loadedProblem,source))).ToHashSet()),
+                        _jaja(tail, rowRecursive.Append(InitializeRows2(Metodino(loadedProblem,source, perez))).ToHashSet()),
                 (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name != tail.First().Name =>
-                        _jaja(tail, rowRecursive.Append(InitializeRows2(Metodino(loadedProblem, source))).Concat(InitializeRows3(Metodino(loadedProblem, source))).ToHashSet()),
+                        _jaja(tail, rowRecursive.Append(InitializeRows2(Metodino(loadedProblem, source, perez)))
+                        .Concat(InitializeRows3(Metodino(loadedProblem, source, perez), pedrito)).ToHashSet()),
                 _ => rowRecursive,
             };
-            return _jaja(sources.OrderBy(x=>x.Name).ToList(), new());
+            return _jaja(fonte ? sources.OrderBy(x=>x.Name).ToList():sinks.OrderBy(x => x.Name).ToList(), new());
         }
-        private (JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs) Metodino(JsonProblem loadedProblem, CommoditySourceSink source)
+
+        static readonly Func<Edge, string, bool> func = (edge, name) => edge.Source == name;
+        static readonly Func<Edge, string, bool> func2 = (edge, name) => edge.Destination == name;
+        private (JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs) Metodino(JsonProblem loadedProblem, CommoditySourceSink source, Func<Edge, string, bool> filter)
         {
-            var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Source == source.Name).ToList();
+            var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(edge=> filter(edge.edge,source.Name)).ToList();
             var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
             sourceEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
             return (loadedProblem, source, rowCoeffs);
@@ -50,16 +55,20 @@ namespace MaxFlowOptimizeDemo
                 return new Row(CreateRow(values.rowCoeffs, contained, values.loadedProblem.Commodities.Count).ToArray(), weight, 'L');
                 
         }
-        private  HashSet<Row> InitializeRows3((JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs) values)
+
+        static readonly Func<JsonProblem, CommoditySourceSink, List<string>> juanito = (loadproblem, source) => loadproblem.CommoditiesSources.Where(x => x.Name == source.Name).Select(xx => xx.Commodity).ToList();
+        static readonly Func<JsonProblem, CommoditySourceSink, List<string>> juanito2 = (loadproblem, source) => loadproblem.CommoditiesSinks.Where(x => x.Name == source.Name).Select(xx => xx.Commodity).ToList();
+        private  HashSet<Row> InitializeRows3((JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs) values, Func<JsonProblem, CommoditySourceSink, List<string>> pedrito)
         {
-                var myCommodities = values.loadedProblem.CommoditiesSources.Where(x => x.Name == values.source.Name).Select(xx => xx.Commodity);
+                var myCommodities = pedrito(values.loadedProblem,values.source);
                 var contained = commodities.Where(commo => !myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
                 return contained.Select(x => new Row(CreateRow(values.rowCoeffs, x, values.loadedProblem.Commodities.Count).ToArray(), 0, 'L')).ToHashSet();
         }
         protected override void InitializeRows(JsonProblem loadedProblem)
         {
-            rows = jaja(loadedProblem);
-            
+            rows = jaja(loadedProblem, true, juanito, func);
+            rows = rows.Concat(jaja(loadedProblem, false, juanito2,func2)).ToHashSet();
+
             /*sources.SelectMany(source => {
                 var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Source == source.Name).ToList();
                 var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
@@ -80,7 +89,7 @@ namespace MaxFlowOptimizeDemo
                 var myCommodities = loadedProblem.CommoditiesSources.Where(x => x.Name == source).Select(xx => xx.Commodity);
                 var contained = commodities.Where(commo => !myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
                 return contained.Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(),0, 'L'));
-            })).ToHashSet();*/
+            })).ToHashSet();
 
             rows = rows.Concat(sinks.SelectMany(sink => {
                 var sinkEdges = edges.Select((edge, column) => (edge, column)).Where(combo => combo.edge.Destination == sink.Name).ToList();
@@ -93,7 +102,7 @@ namespace MaxFlowOptimizeDemo
                     Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(),
                      contained.Contains(x) ? weight : 0, 'L'));
             })).ToHashSet();
-
+            */
             rows = rows.Concat(nodes.SelectMany(node =>
             {
                 var nodeEdges = edges.Select((edge, column) => (edge, column))
