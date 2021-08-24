@@ -13,7 +13,7 @@ namespace MaxFlowOptimizeDemo
     /// </summary>
     class NewFormulationFlowProblem : AbstractFlowProblem
     {
-        private readonly int nMaxMultiplier;
+        protected readonly int nMaxMultiplier;
 
         public NewFormulationFlowProblem(int nMax) : base()
         {

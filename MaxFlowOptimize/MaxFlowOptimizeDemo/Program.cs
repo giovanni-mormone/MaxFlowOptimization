@@ -27,7 +27,7 @@ namespace MaxFlowOptimizeDemo
 
 		private static void RunOptimiziation(string problemName, int edgeMultiplier, bool isVerbose)
       {
-			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new NewFormulationFlowProblem(edgeMultiplier));
+			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new NewFormulationSourceCapacityRestrained(edgeMultiplier));
 			flowOptimizer.ReadFromJSON($"../../../Resources/{problemName}");
 			Console.WriteLine("Problema Caricato:");
 			 if(isVerbose)

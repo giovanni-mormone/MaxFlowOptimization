@@ -5,13 +5,13 @@
     {
       "Name": "s1",
       "Commodity": "k1",
-      "Capacity": 9
+      "Capacity": 8
     },
 
     {
       "Name": "s2",
       "Commodity": "k1",
-      "Capacity": 7
+      "Capacity": 8
     },
     {
       "Name": "s2",
@@ -23,59 +23,60 @@
     {
       "Name": "t1",
       "Commodity": "k1",
-      "Capacity": 56
+      "Capacity": -1
     },
     {
       "Name": "t1",
       "Commodity": "k2",
-      "Capacity": 66
+      "Capacity": -1
     },
     {
       "Name": "t2",
       "Commodity": "k1",
-      "Capacity": 35
+      "Capacity": -1
     },
     {
       "Name": "t2",
       "Commodity": "k2",
-      "Capacity": 47
+      "Capacity": -1
     }
   ],
   "Edges": [
     {
       "Source": "s1",
       "Destination": "n1",
-      "Weigth": -1
+      "Weigth": 8
     },
     {
       "Source": "s1",
       "Destination": "n3",
-      "Weigth": -1
+      "Weigth": 8
     },
     {
       "Source": "s2",
       "Destination": "n3",
-      "Weigth": -1
+      "Weigth": 8
     },
     {
       "Source": "n1",
       "Destination": "n2",
-      "Weigth": 26
+      "Weigth": 70
     },
     {
       "Source": "n1",
       "Destination": "n4",
-      "Weigth": 19
+      "Weigth": 70
     },
     {
       "Source": "n3",
       "Destination": "n2",
-      "Weigth": 22
+      "Weigth": 70
     },
     {
       "Source": "n3",
       "Destination": "n4",
-      "Weigth": 19
+      "Weigth": 70
+
     },
     {
       "Source": "n2",

@@ -5,33 +5,33 @@
     {
       "Name": "s1",
       "Commodity": "2/1",
-      "Capacity": 20000
+      "Capacity": 2000
     },
 
     {
       "Name": "s2",
       "Commodity": "1/1",
-      "Capacity": 20000
+      "Capacity": 2000
     },
     {
       "Name": "s2",
       "Commodity": "3/1",
-      "Capacity": 20000
+      "Capacity": 2000
     },
     {
       "Name": "s3",
       "Commodity": "1/2",
-      "Capacity": 20000
+      "Capacity": 2000
     },
     {
       "Name": "s3",
       "Commodity": "3/2",
-      "Capacity": 20000
+      "Capacity": 2000
     },
     {
       "Name": "s4",
       "Commodity": "2/2",
-      "Capacity": 20000
+      "Capacity": 2000
     }
   ],
   "CommoditiesSinks": [
@@ -75,42 +75,42 @@
     {
       "Source": "s1",
       "Destination": "n1",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s1",
       "Destination": "n2",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s2",
       "Destination": "n1",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s2",
       "Destination": "n2",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s3",
       "Destination": "n2",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s3",
       "Destination": "n3",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s4",
       "Destination": "n2",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "s4",
       "Destination": "n3",
-      "Weigth": -1
+      "Weigth": 1000
     },
     {
       "Source": "n1",
