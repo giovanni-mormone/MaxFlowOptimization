@@ -27,7 +27,7 @@ namespace MaxFlowOptimizeDemo
 
 		private static void RunOptimiziation(string problemName, int edgeMultiplier, bool isVerbose)
       {
-			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new MultiCommodityFlowProblem());
+			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new NewFormulationFlowProblem(edgeMultiplier));
 			flowOptimizer.ReadFromJSON($"../../../Resources/{problemName}");
 			Console.WriteLine("Problema Caricato:");
 			 if(isVerbose)
@@ -36,17 +36,6 @@ namespace MaxFlowOptimizeDemo
 			Console.WriteLine(result);
 			flowOptimizer.SaveMPS($"../../../Resources/loadedProblem-{problemName}");
 			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
-			flowOptimizer.UpdateEdge(new Edge(5, "n1", "n2"));
-			flowOptimizer.UpdateEdge(new Edge(7, "n1", "n4"));
-			flowOptimizer.UpdateEdge(new Edge(16, "n3", "n2"));
-			flowOptimizer.UpdateEdge(new Edge(11, "n3", "n4"));
-			Console.WriteLine("Problema Modificato:");
-			if(isVerbose)
-				flowOptimizer.PrintProblemRows();
-			result = flowOptimizer.OptimizeProblem();
-			Console.WriteLine(result);
-			flowOptimizer.SaveMPS($"../../../Resources/updatedProblem-{problemName}");
-			flowOptimizer.SaveResult($"../../../Resources/updatedResult-{problemName}");
 		}
 
 		static parms readConfig()

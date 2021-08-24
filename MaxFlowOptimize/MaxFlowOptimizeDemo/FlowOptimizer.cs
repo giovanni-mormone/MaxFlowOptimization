@@ -94,7 +94,7 @@ namespace MaxFlowOptimizeDemo
             double[] reducedCost = new double[WrapperCoin.GetColCount(problem)];
             double[] slackV = new double[WrapperCoin.GetRowCount(problem)];
             double[] shadowPrice = new double[WrapperCoin.GetRowCount(problem)];
-
+            
             WrapperCoin.GetSolutionValues(problem, edgesV, reducedCost, slackV, shadowPrice);
             actualResult =flow.CreateResult(result, edgesV.ToList());
             return actualResult;
@@ -227,7 +227,6 @@ namespace MaxFlowOptimizeDemo
             List<double> upperBounds = Enumerable.Repeat(infinite, numberOfVariables).ToList();
             List<int> matrixBegin = Enumerable.Repeat(0, numberOfVariables + 1).ToList();
             List<int> matrixCount = Enumerable.Repeat(0, numberOfVariables).ToList();
-            List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
             double[] n = Array.Empty<double>();
             char[] c = Array.Empty<char>();
             int[] i = Array.Empty<int>();
@@ -238,7 +237,9 @@ namespace MaxFlowOptimizeDemo
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
-            WrapperCoin.LoadInteger(problem, columnType.ToArray());
+
+            //List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
+            //WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
     }
