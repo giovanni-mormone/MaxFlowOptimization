@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using WrapperCoinMP;
 
 namespace MaxFlowOptimizeDemo
@@ -79,7 +80,7 @@ namespace MaxFlowOptimizeDemo
         {
             if (actualProblem.CommoditiesSources.All(x => !Source.Equals(Source)) && actualProblem.Commodities.Contains(Source.Commodity))
             {
-                actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, 
+                actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities,
                     actualProblem.CommoditiesSources.Append(Source).ToHashSet(), actualProblem.CommoditiesSinks, actualProblem.Edges);
                 RecreateProblem();
             }
@@ -94,18 +95,22 @@ namespace MaxFlowOptimizeDemo
             double[] reducedCost = new double[WrapperCoin.GetColCount(problem)];
             double[] slackV = new double[WrapperCoin.GetRowCount(problem)];
             double[] shadowPrice = new double[WrapperCoin.GetRowCount(problem)];
-            
+
             WrapperCoin.GetSolutionValues(problem, edgesV, reducedCost, slackV, shadowPrice);
-            actualResult =flow.CreateResult(result, edgesV.ToList());
+            actualResult = flow.CreateResult(result, edgesV.ToList());
             return actualResult;
         }
 
-        public void PrintProblemRows() => flow.GetRows().ToList().ForEach(x => Console.WriteLine(x));
+        public void PrintProblemRows(){
+
+            Console.WriteLine(CreateVariableNames());
+            Console.WriteLine("MAX,"+ string.Join(",", flow.GetObjectiveCoeffs().Select(x => $"{x}").ToArray()));
+            flow.GetRows().ToList().ForEach(x => Console.WriteLine(x));
+        }
 
         public void ReadFromJSON(string path)
         {
             var serializer = new JsonSerializer();
-            //../../../problem.json se parte da visual studio per ora
             using StreamReader file = File.OpenText(path);
             using JsonTextReader reader = new JsonTextReader(file);
             var jsonProblem = serializer.Deserialize<JsonProblem>(reader);
@@ -175,6 +180,15 @@ namespace MaxFlowOptimizeDemo
 
         public void SaveMPS(string path) => WrapperCoin.WriteMPSFile(problem, path);
 
+        public void SaveCSV(string path)
+        {
+            StringBuilder output = new StringBuilder();
+            output.AppendLine(CreateVariableNames());
+            var xx = string.Join(",", flow.GetObjectiveCoeffs().Select(x => $"{x}").ToArray()) + ", MAX";
+            output.AppendLine(xx);
+            flow.GetRows().ToList().ForEach(x => output.AppendLine(x.ToString()));
+            File.WriteAllText(path + ".csv", output.ToString());
+        }
 
         public void SaveToJSON(string path)
         {
@@ -187,7 +201,7 @@ namespace MaxFlowOptimizeDemo
         public void SaveResult(string path)
         {
             var serializer = new JsonSerializer();
-            using StreamWriter file = File.CreateText(path);
+            using StreamWriter file = File.CreateText(path + ".json");
             using JsonTextWriter writer = new JsonTextWriter(file);
             serializer.Serialize(writer, actualResult);
         }
@@ -216,7 +230,6 @@ namespace MaxFlowOptimizeDemo
             problem = WrapperCoin.CreateProblem(WrapperCoin.GetProblemName(problem));
             InitializeWrapperProblem(actualProblem);
         }
-
         private void InitializeWrapperProblem(JsonProblem jsonProblem)
         {
             int numberOfVariables = jsonProblem.Edges.Count * jsonProblem.Commodities.Count;
@@ -237,10 +250,13 @@ namespace MaxFlowOptimizeDemo
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
-
             List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
             WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
+        private string CreateVariableNames() => string.Join(",", actualProblem.Commodities.SelectMany(commodity => (actualProblem.Edges.Select(edge =>
+        {
+            return commodity + "_" + edge.Source + "->" + edge.Destination;
+        }))).ToList().Select(x => $"{x}")).ToString();
     }
 }

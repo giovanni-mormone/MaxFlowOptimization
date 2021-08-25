@@ -13,17 +13,22 @@ namespace MaxFlowOptimizeDemo
     /// A class used to model a flow problem, using a <see cref="JsonProblem"/> as a source to create and model a flow
     /// problem.
     /// </summary>
-    public abstract class AbstractFlowProblem : IFlowProblem
+    public class FlowProblemFormulation : IFlowProblem
     {
-        protected static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
-        protected HashSet<string> nodes;
-        protected HashSet<CommoditySourceSink> sources;
-        protected HashSet<CommoditySourceSink> sinks;
-        protected List<double> objectiveCoeffs;
-        protected HashSet<Edge> edges;
-        protected HashSet<Row> rows;
-        protected HashSet<Commodity> commodities;
+        private static readonly double INFINITY = WrapperCoinMP.WrapperCoin.GetInfinity();
+        private HashSet<string> nodes;
+        private HashSet<CommoditySourceSink> sources;
+        private HashSet<CommoditySourceSink> sinks;
+        private List<double> objectiveCoeffs;
+        private HashSet<Edge> edges;
+        private HashSet<Row> rows;
+        private HashSet<Commodity> commodities;
+        private readonly int nMaxMultiplier;
 
+        public FlowProblemFormulation(int nMax)
+        {
+            nMaxMultiplier = nMax;
+        }
 
         /// <summary>
         /// Method used to initialize a <see cref="IFlowProblem"/>.
@@ -61,27 +66,7 @@ namespace MaxFlowOptimizeDemo
         /// <returns>An <see cref="Array"/> of <see cref="double"/> representing the coeffs of the objective function.</returns>
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
 
-       
-        protected abstract void InitializeObjectiveCoeffs(JsonProblem loadedProblem);
-
-        protected virtual void InitializeRows(JsonProblem loadedProblem)
-        {
-
-            rows = SourceSinkInitialize(loadedProblem, true);
-            rows = rows.Concat(SourceSinkInitialize(loadedProblem, false)).ToHashSet();
-
-            rows = rows.Concat(nodes.SelectMany(node =>
-                edges.Select((edge, column) => (edge, column))
-                    .Where(combo => combo.edge.Source == node && !sinks.Select(x => x.Name).Contains(combo.edge.Destination))
-                    .Select(edge =>
-                        new Row(RangeList(loadedProblem.Commodities.Count).SelectMany(_ => RepeatedZeroList(loadedProblem.Edges.Count)
-                            .Select((value, column) => column == edge.column ? 1 : value).ToList()).ToArray(), edge.edge.Weigth, 'L')
-                )
-            )).ToHashSet();
-        }
-        
-
-        protected static List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
+        private static List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
         {
             var zeroRow = RepeatedZeroList(coeffs.Count);
             List<double> _createRow(IEnumerable<double> origin, int step) => step switch
@@ -93,7 +78,6 @@ namespace MaxFlowOptimizeDemo
             return _createRow(Enumerable.Empty<double>(), 0);
         }
 
-
         private void InitializeNodesAndEdges(JsonProblem loaded)
         {
             commodities = loaded.Commodities.Select((name, id) => (name, id)).Select(x => new Commodity(x.name, x.id)).ToHashSet();
@@ -101,7 +85,47 @@ namespace MaxFlowOptimizeDemo
             sinks = loaded.CommoditiesSinks.ToHashSet();
             nodes = loaded.Nodes.ToHashSet();
             edges = RangeList(loaded.Edges.Count).Select(x => loaded.Edges.ElementAt(x)).ToHashSet();
-        } 
+        }
+
+        private void InitializeObjectiveCoeffs(JsonProblem loadedProblem)
+        {
+            List<double> obj = RepeatedZeroList(loadedProblem.Edges.Count)
+                                       .Select((x, y) => edges.Select((xx, yy) => loadedProblem.CommoditiesSinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
+            objectiveCoeffs = RangeList(loadedProblem.Commodities.Count).SelectMany(_ => obj.ToList()).ToList();
+
+        }
+
+        private void InitializeRows(JsonProblem loadedProblem)
+        {
+            rows = SourceSinkInitialize(loadedProblem, true);
+            rows = rows.Concat(SourceSinkInitialize(loadedProblem, false)).ToHashSet();
+
+            SetContinuityConstraints(loadedProblem, FirstContinuityRestraint);
+            SetContinuityConstraints(loadedProblem, SecondContinuityRestraint);
+
+            rows = rows.Concat(edges.Select((edge, column) => 
+                new Row(RangeList(loadedProblem.Commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(loadedProblem.Edges.Count)
+                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
+                .ToHashSet();
+        }
+
+        double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Capacity;
+
+        private void SetContinuityConstraints(JsonProblem loadedProblem, Func<bool, int> SetCoeffs)
+        {
+            rows = rows.Concat(nodes.SelectMany(node =>
+            {
+                var nodeEdges = edges.Select((edge, column) => (edge, column))
+                    .Where(combo => combo.edge.Source == node || combo.edge.Destination == node).ToList();
+                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
+
+                nodeEdges.ForEach(edge => rowCoeffs[edge.column] = SetCoeffs(edge.edge.Destination == node));
+                return RangeList(loadedProblem.Commodities.Count).Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(), 0, 'L'));
+            })).ToHashSet();
+        }
+        private int FirstContinuityRestraint(bool y) => y ? 1 : -1;
+        private int SecondContinuityRestraint(bool y) => y ? -1 * nMaxMultiplier : 1;
+
         //Method used to compute, in a tail recursive way, the row constraints of sources and sinks;
         //It uses the loaded problem, a boolean to decide if it is source or sink,
         private HashSet<Row> SourceSinkInitialize(JsonProblem loadedProblem, bool IsSource)
@@ -120,13 +144,9 @@ namespace MaxFlowOptimizeDemo
             HashSet<Row> _SourceSinkInitialize(List<CommoditySourceSink> sources, HashSet<Row> rowRecursive) => sources switch
             {
                 (CommoditySourceSink source, _) when sources.Count == 1 =>
-                          rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink)))
-                          .Concat(NotContainedCommoditiesConstraints(Metodino(loadedProblem, source, findSourceSink), findCommoditySourceSink)).ToHashSet(),
-                (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name == tail.First().Name =>
+                          rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink))).ToHashSet(),
+                (CommoditySourceSink source, List<CommoditySourceSink> tail) =>
                         _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink))).ToHashSet()),
-                (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name != tail.First().Name =>
-                        _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink)))
-                        .Concat(NotContainedCommoditiesConstraints(Metodino(loadedProblem, source, findSourceSink), findCommoditySourceSink)).ToHashSet()),
                 _ => rowRecursive,
             };
             return _SourceSinkInitialize(IsSource ? sources.OrderBy(x => x.Name).ToList() : sinks.OrderBy(x => x.Name).ToList(), new());
@@ -145,16 +165,8 @@ namespace MaxFlowOptimizeDemo
         {
             var contained = commodities.First(commo => commo.CommodityName == values.source.Commodity).CommodityNumber;
             double weight = values.source.Capacity == -1 ? INFINITY : values.source.Capacity;
-            return new Row(CreateRow(values.rowCoeffs, contained, values.loadedProblem.Commodities.Count).ToArray(), weight, 'L');
+            return new Row(CreateRow(values.rowCoeffs, contained, values.loadedProblem.Commodities.Count).ToArray(), 1, 'L');
 
-        }
-
-        //method that create the constraints for all the commodities that are not present in the given source or sink.
-        private HashSet<Row> NotContainedCommoditiesConstraints(SourceSinkCoeffs values, Func<JsonProblem, CommoditySourceSink, List<string>> FindCommodities)
-        {
-            var myCommodities = FindCommodities(values.loadedProblem, values.source);
-            var contained = commodities.Where(commo => !myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
-            return contained.Select(x => new Row(CreateRow(values.rowCoeffs, x, values.loadedProblem.Commodities.Count).ToArray(), 0, 'L')).ToHashSet();
         }
 
         //record used to store the data of a given source/sink.

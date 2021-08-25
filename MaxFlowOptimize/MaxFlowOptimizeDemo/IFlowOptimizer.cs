@@ -35,6 +35,14 @@ namespace MaxFlowOptimizeDemo
         /// is going to be written</param>
         void SaveMPS(string fileNamePath);
         /// <summary>
+        /// Method used to write the loaded problem to the CSV file specified in the path parameter.
+        /// </summary>
+        /// <param name="path"> a <see cref="string"/> used to represent the path where the CSV file 
+        /// is going to be written</param>
+
+        void SaveCSV(string fileNamePath);
+
+        /// <summary>
         /// Method used to optimize the loaded flow problem
         /// </summary>
         /// <returns> A <see cref="Result"/> representing the result of the optimization of the problem</returns>
