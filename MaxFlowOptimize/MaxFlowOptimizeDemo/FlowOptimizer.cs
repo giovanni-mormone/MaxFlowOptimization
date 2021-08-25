@@ -238,8 +238,8 @@ namespace MaxFlowOptimizeDemo
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
 
-            //List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
-            //WrapperCoin.LoadInteger(problem, columnType.ToArray());
+            List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
+            WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
     }

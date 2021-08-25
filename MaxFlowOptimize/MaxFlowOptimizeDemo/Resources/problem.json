@@ -5,18 +5,18 @@
     {
       "Name": "s1",
       "Commodity": "k1",
-      "Capacity": 8
+      "Capacity": 1
     },
 
     {
       "Name": "s2",
       "Commodity": "k1",
-      "Capacity": 8
+      "Capacity": 1
     },
     {
       "Name": "s2",
       "Commodity": "k2",
-      "Capacity": 8
+      "Capacity": 1
     }
   ],
   "CommoditiesSinks": [
@@ -45,17 +45,17 @@
     {
       "Source": "s1",
       "Destination": "n1",
-      "Weigth": 8
+      "Weigth": 32
     },
     {
       "Source": "s1",
       "Destination": "n3",
-      "Weigth": 8
+      "Weigth": 32
     },
     {
       "Source": "s2",
       "Destination": "n3",
-      "Weigth": 8
+      "Weigth": 32
     },
     {
       "Source": "n1",

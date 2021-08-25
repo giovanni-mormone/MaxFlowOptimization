@@ -1,5 +1,5 @@
 {
-	"isVerbose" : true,
-	"problemFile" : "EsempioBroker.json",
-	"nmax" : 3
+	"isVerbose": true,
+	"problemFile": "TinyInstance.json",
+	"nmax": 2
 }
