@@ -20,17 +20,18 @@ namespace MaxFlowOptimizeDemo
         private JsonProblem actualProblem;
         private readonly IFlowProblem flow;
         private Result actualResult;
-
+        private bool isFirstFormulation;
         /// <summary>
         /// Constructor of a flow optimizer;
         /// </summary>
         /// <param name="problemName">The name of the problem, param needed by the <see cref="WrapperCoinMP"/> wrapper</param>
         /// <param name="Flow"> The <see cref="IFlowProblem"/> implementation used to optimize the problem.</param>
-        public FlowOptimizer(string problemName, IFlowProblem Flow)
+        public FlowOptimizer(string problemName, IFlowProblem Flow, bool IsFirstFormulation)
         {
             WrapperCoin.InitSolver();
             problem = WrapperCoin.CreateProblem(problemName);
             flow = Flow;
+            isFirstFormulation = IsFirstFormulation;
         }
         public void AddCommodity(string Commodity) => actualProblem.Commodities.Add(Commodity);
 
@@ -244,7 +245,12 @@ namespace MaxFlowOptimizeDemo
             char[] c = Array.Empty<char>();
             int[] i = Array.Empty<int>();
 
-            flow.InizializeProblem(actualProblem);
+            if (isFirstFormulation) {
+                flow.InizializeProblem(actualProblem);
+            }
+            else {
+                flow.InizializeProblemAlternativeFormulation(actualProblem);
+            }
             double[] objectCoeffs = flow.GetObjectiveCoeffs();
             List<Row> rows = flow.GetRows().ToList();
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
