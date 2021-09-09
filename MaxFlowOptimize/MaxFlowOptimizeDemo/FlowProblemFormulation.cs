@@ -169,11 +169,6 @@ namespace MaxFlowOptimizeDemo
 
         }
 
-        public void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem)
-        {
-            throw new NotImplementedException();
-        }
-
         //record used to store the data of a given source/sink.
         private record SourceSinkCoeffs(JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs);
         //Static private func section;

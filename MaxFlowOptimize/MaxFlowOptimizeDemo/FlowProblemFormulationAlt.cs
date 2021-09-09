@@ -38,15 +38,9 @@ namespace MaxFlowOptimizeDemo
         public void InizializeProblem(JsonProblem loadedProblem)
         {
             InitializeNodesAndEdges(loadedProblem);
-            InitializeObjectiveCoeffs();
-            InitializeRows();
-        }
+            InitializeObjectiveCoeffs(loadedProblem);
+            InitializeRows(loadedProblem);
 
-        public void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem)
-        {
-            InitializeNodesAndEdges(loadedProblem);
-            InitializeObjectiveCoeffs();
-            InitializeRowsAlternative();
         }
         /// <summary>
         /// Method used to create a <see cref="Result"/> from the given parameters
@@ -94,90 +88,40 @@ namespace MaxFlowOptimizeDemo
             edges = RangeList(loaded.Edges.Count).Select(x => loaded.Edges.ElementAt(x)).ToHashSet();
         }
 
-        private void InitializeObjectiveCoeffs()
+        private void InitializeObjectiveCoeffs(JsonProblem loadedProblem)
         {
-            List<double> obj = RepeatedZeroList(edges.Count)
-                                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
-            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();
+            List<double> obj = RepeatedZeroList(loadedProblem.Edges.Count)
+                                       .Select((x, y) => edges.Select((xx, yy) => loadedProblem.CommoditiesSinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
+            objectiveCoeffs = RangeList(loadedProblem.Commodities.Count).SelectMany(_ => obj.ToList()).ToList();
 
         }
 
-        private void InitializeObjectiveCoeffsAlternative()
+        private void InitializeRows(JsonProblem loadedProblem)
         {
-            List<double> obj = RepeatedZeroList(edges.Count)
-                                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? -1.0 : 0.0).ToList();
-            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();
+            rows = SourceSinkInitialize(loadedProblem, true);
+            rows = rows.Concat(SourceSinkInitialize(loadedProblem, false)).ToHashSet();
 
-        }
+            SetContinuityConstraints(loadedProblem, FirstContinuityRestraint);
+            SetContinuityConstraints(loadedProblem, SecondContinuityRestraint);
 
-        private void InitializeRows()
-        {
-            rows = SourceSinkInitialize(true);
-            rows = rows.Concat(SourceSinkInitialize(false)).ToHashSet();
-
-            SetContinuityConstraints(FirstContinuityRestraint);
-            SetContinuityConstraints(SecondContinuityRestraint);
-
-            rows = rows.Concat(edges.Select((edge, column) =>
-                new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
+            rows = rows.Concat(edges.Select((edge, column) => 
+                new Row(RangeList(loadedProblem.Commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(loadedProblem.Edges.Count)
                     .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
                 .ToHashSet();
         }
 
+        double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Capacity;
 
-
-
-        private HashSet<Row> SetInequalitiesConstraints()
-        {
-
-            var edgesAndColumns = edges.Select((edge, column) => (edge, column)).ToList();
-            HashSet<Row> result = new HashSet<Row>();
-            edgesAndColumns.ForEach(edge =>
-            {
-                if(sources.All(x => x.Name != edge.edge.Source))
-                {
-                    var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
-                    var myCommodities = sinks.Where(x => x.Name == edge.edge.Destination).Select(x => x.Commodity).ToList();
-                    var edgerow = RepeatedZeroList(edges.Count).Select((x,col) => predecessors.Any(x => x.column == col)? -1 : x).ToList();
-
-                    if (sinks.Any(x => x.Name == edge.edge.Destination))
-                    {
-                        result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
-                            new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -2, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
-                        
-                    }
-                    else if (sources.All(x => x.Name != edge.edge.Source))
-                    {
-                        result = result.Concat(RangeList(commodities.Count).Select(x => new Row(CreateRow(edgerow, x, commodities.Count).ToArray(), -1, 'L'))).ToHashSet();
-                    }
-                }
-                
-            });
-            return result;
-        }
-
-        private void InitializeRowsAlternative()
-        {
-            rows = SetInequalitiesConstraints();
-            rows = rows.Concat(edges.Select((edge, column) =>
-                new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
-                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
-                .ToHashSet();
-
-        }
-
-        private double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Capacity;
-
-        private void SetContinuityConstraints(Func<bool, int> SetCoeffs)
+        private void SetContinuityConstraints(JsonProblem loadedProblem, Func<bool, int> SetCoeffs)
         {
             rows = rows.Concat(nodes.SelectMany(node =>
             {
                 var nodeEdges = edges.Select((edge, column) => (edge, column))
                     .Where(combo => combo.edge.Source == node || combo.edge.Destination == node).ToList();
-                var rowCoeffs = RepeatedZeroList(edges.Count);
+                var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
 
                 nodeEdges.ForEach(edge => rowCoeffs[edge.column] = SetCoeffs(edge.edge.Destination == node));
-                return RangeList(commodities.Count).Select(x => new Row(CreateRow(rowCoeffs, x, commodities.Count).ToArray(), 0, 'L'));
+                return RangeList(loadedProblem.Commodities.Count).Select(x => new Row(CreateRow(rowCoeffs, x, loadedProblem.Commodities.Count).ToArray(), 0, 'L'));
             })).ToHashSet();
         }
         private int FirstContinuityRestraint(bool y) => y ? 1 : -1;
@@ -185,7 +129,7 @@ namespace MaxFlowOptimizeDemo
 
         //Method used to compute, in a tail recursive way, the row constraints of sources and sinks;
         //It uses the loaded problem, a boolean to decide if it is source or sink,
-        private HashSet<Row> SourceSinkInitialize(bool IsSource)
+        private HashSet<Row> SourceSinkInitialize(JsonProblem loadedProblem, bool IsSource)
         {
             //first i set the right filter functions for the tail method.
             var findSourceSink = IsSource ? FindSources : FindSinks;
@@ -201,47 +145,48 @@ namespace MaxFlowOptimizeDemo
             HashSet<Row> _SourceSinkInitialize(List<CommoditySourceSink> sources, HashSet<Row> rowRecursive) => sources switch
             {
                 (CommoditySourceSink source, _) when sources.Count == 1 =>
-                         rowRecursive.Append(ContainedCommodityConstraint(Metodino(source, findSourceSink)))
-                         .Concat(NotContainedCommoditiesConstraints(Metodino(source, findSourceSink), findCommoditySourceSink, IsSource)).ToHashSet(),
+                         rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink)))
+                         .Concat(NotContainedCommoditiesConstraints(Metodino(loadedProblem, source, findSourceSink), findCommoditySourceSink)).ToHashSet(),
                 (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name == tail.First().Name =>
-                        _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(source, findSourceSink))).ToHashSet()),
+                        _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink))).ToHashSet()),
                 (CommoditySourceSink source, List<CommoditySourceSink> tail) when source.Name != tail.First().Name =>
-                        _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(source, findSourceSink)))
-                        .Concat(NotContainedCommoditiesConstraints(Metodino(source, findSourceSink), findCommoditySourceSink, IsSource)).ToHashSet()),
+                        _SourceSinkInitialize(tail, rowRecursive.Append(ContainedCommodityConstraint(Metodino(loadedProblem, source, findSourceSink)))
+                        .Concat(NotContainedCommoditiesConstraints(Metodino(loadedProblem, source, findSourceSink), findCommoditySourceSink)).ToHashSet()),
                 _ => rowRecursive,
             };
             return _SourceSinkInitialize(IsSource ? sources.OrderBy(x => x.Name).ToList() : sinks.OrderBy(x => x.Name).ToList(), new());
         }
 
        //method used to create the SourceSinkCoeffs for the given CommoditySourceSink.
-        private SourceSinkCoeffs Metodino(CommoditySourceSink source, Func<Edge, string, bool> findSourceSink)
+        private SourceSinkCoeffs Metodino(JsonProblem loadedProblem, CommoditySourceSink source, Func<Edge, string, bool> findSourceSink)
         {
             var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(edge => findSourceSink(edge.edge, source.Name)).ToList();
-            var rowCoeffs = RepeatedZeroList(edges.Count);
+            var rowCoeffs = RepeatedZeroList(loadedProblem.Edges.Count);
             sourceEdges.ForEach(edge => rowCoeffs[edge.column] = 1);
-            return new SourceSinkCoeffs(source, rowCoeffs);
+            return new SourceSinkCoeffs(loadedProblem, source, rowCoeffs);
         }
         //Method that create the constraint for a given source or sink.
         private Row ContainedCommodityConstraint(SourceSinkCoeffs values)
         {
             var contained = commodities.First(commo => commo.CommodityName == values.source.Commodity).CommodityNumber;
-            //double weight = values.source.Capacity == -1 ? INFINITY : values.source.Capacity;
-            return new Row(CreateRow(values.rowCoeffs, contained, commodities.Count).ToArray(), 1, 'L');
+            double weight = values.source.Capacity == -1 ? INFINITY : values.source.Capacity;
+            return new Row(CreateRow(values.rowCoeffs, contained, values.loadedProblem.Commodities.Count).ToArray(), 1, 'L');
+
         }
 
-        private HashSet<Row> NotContainedCommoditiesConstraints(SourceSinkCoeffs values, Func<HashSet<CommoditySourceSink>, CommoditySourceSink, List<string>> FindCommodities, bool isSource)
+        private HashSet<Row> NotContainedCommoditiesConstraints(SourceSinkCoeffs values, Func<JsonProblem, CommoditySourceSink, List<string>> FindCommodities)
         {
-            var myCommodities = FindCommodities(isSource ? sources : sinks,values.source);
+            var myCommodities = FindCommodities(values.loadedProblem, values.source);
             var contained = commodities.Where(commo => !myCommodities.ToList().Contains(commo.CommodityName)).Select(x => x.CommodityNumber).ToList();
-            return contained.Select(x => new Row(CreateRow(values.rowCoeffs, x, commodities.Count).ToArray(), 0, 'E')).ToHashSet();
+            return contained.Select(x => new Row(CreateRow(values.rowCoeffs, x, values.loadedProblem.Commodities.Count).ToArray(), 0, 'E')).ToHashSet();
         }
 
         //record used to store the data of a given source/sink.
-        private record SourceSinkCoeffs(CommoditySourceSink source, List<double> rowCoeffs);
+        private record SourceSinkCoeffs(JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs);
         //Static private func section;
         //This methods are used to initialize the source and sinks constraints.
-        private static readonly Func<HashSet<CommoditySourceSink>, CommoditySourceSink, List<string>> FindCommoditySource = (sources, source) => sources.Where(x => x.Name == source.Name).Select(xx => xx.Commodity).ToList();
-        private static readonly Func<HashSet<CommoditySourceSink>, CommoditySourceSink, List<string>> FindCommoditySink = (sinks, sink) => sinks.Where(x => x.Name == sink.Name).Select(xx => xx.Commodity).ToList();
+        private static readonly Func<JsonProblem, CommoditySourceSink, List<string>> FindCommoditySource = (loadproblem, source) => loadproblem.CommoditiesSources.Where(x => x.Name == source.Name).Select(xx => xx.Commodity).ToList();
+        private static readonly Func<JsonProblem, CommoditySourceSink, List<string>> FindCommoditySink = (loadproblem, sink) => loadproblem.CommoditiesSinks.Where(x => x.Name == sink.Name).Select(xx => xx.Commodity).ToList();
         private static readonly Func<Edge, string, bool> FindSources = (edge, name) => edge.Source == name;
         private static readonly Func<Edge, string, bool> FindSinks = (edge, name) => edge.Destination == name;
         private static readonly Func<int, int, int, int> ComputeIndexInEdgeResult = (edgeIndex, commodity, totalEdges) => edgeIndex + totalEdges * commodity;
