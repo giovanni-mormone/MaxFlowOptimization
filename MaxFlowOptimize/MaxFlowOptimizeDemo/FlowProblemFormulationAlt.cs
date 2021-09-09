@@ -96,9 +96,21 @@ namespace MaxFlowOptimizeDemo
 
         private void InitializeObjectiveCoeffs()
         {
+            /*List<double> test = RepeatedZeroList(edges.Count * commodities.Count).ToList();
+            edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple => 
+            {
+                sinks.Where(sink => sink.Name == couple.edge.Destination).ToList().ForEach(sink2 =>
+                {
+                    commodities.Where(co => co.CommodityName == sink2.Commodity).ToList().ForEach(commo =>
+                    {
+                        test[couple.index + commo.CommodityNumber * edges.Count] = 1;
+                    }); 
+                });
+            });*/
             List<double> obj = RepeatedZeroList(edges.Count)
                                        .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
-            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();
+            
+            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//test.ToList();
 
         }
 
@@ -124,35 +136,94 @@ namespace MaxFlowOptimizeDemo
                 .ToHashSet();
         }
 
+        private HashSet<Row> EdgeConstraints(Edge edge, int column)
+        {
 
+            return commodities.Select(commodity =>
+            {
+                var predecessors = edges.Select((edge, index) => (edge, index)).Where(x => x.edge.Destination == edge.Source).ToList();
 
+                predecessors = predecessors.Where(x => (sources.All(source => source.Name != x.edge.Source) && sinks.All(sink => sink.Name != x.edge.Source)) ||
+                    sources.Any(source => source.Name == x.edge.Source && source.Commodity == commodity.CommodityName)
+                    ).ToList();
+                /*predecessors = predecessors.Where(x => (sources.All(sources => sources.Name != x.edge.Source) ||
+                    sources.Any(source => source.Commodity == commodity.CommodityName && source.Name == x.edge.Source)) && (
+                    sinks.All(sink => sink.Name != x.edge.Source) || sinks.All(sink => sink.Name != x.edge.Source || sink.Commodity != commodity.CommodityName))).ToList();
+                */var edgerow = RepeatedZeroList(edges.Count).Select((x, col) => predecessors.Any(x => x.index == col) ? -1 : x).ToList();
+
+                if (sinks.Any(x => x.Name == edge.Source && x.Commodity == commodity.CommodityName))
+                {
+                    return new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -1, 'L');
+                }
+                else if (sinks.Any(x => x.Name == edge.Destination && x.Commodity != commodity.CommodityName))
+                {
+                    return new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L');
+                }
+                else if(sources.Any(source => source.Name == edge.Destination && source.Commodity == commodity.CommodityName))
+                {
+                    return new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L');
+                }
+                else if (sources.All(x => x.Name != edge.Source) && sinks.All(x => x.Name != edge.Source))
+                {
+                    return new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -1, 'L');
+                }
+                else
+                {
+                    return new Row(CreateRow(RepeatedZeroList(edges.Count), commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L');
+                }
+            }).ToHashSet();
+        }
 
         private HashSet<Row> SetInequalitiesConstraints()
         {
 
             var edgesAndColumns = edges.Select((edge, column) => (edge, column)).ToList();
             HashSet<Row> result = new HashSet<Row>();
-            edgesAndColumns.ForEach(edge =>
-            {
-                if(sources.All(x => x.Name != edge.edge.Source))
-                {
-                    var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
-                    var myCommodities = sinks.Where(x => x.Name == edge.edge.Destination).Select(x => x.Commodity).ToList();
-                    var edgerow = RepeatedZeroList(edges.Count).Select((x,col) => predecessors.Any(x => x.column == col)? -1 : x).ToList();
 
-                    if (sinks.Any(x => x.Name == edge.edge.Destination))
-                    {
-                        result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
-                            new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -2, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
-                        
-                    }
-                    else if (sources.All(x => x.Name != edge.edge.Source))
-                    {
-                        result = result.Concat(RangeList(commodities.Count).Select(x => new Row(CreateRow(edgerow, x, commodities.Count).ToArray(), -1, 'L'))).ToHashSet();
-                    }
+            result = result.Concat(edgesAndColumns.SelectMany(edge =>
+            {
+                return EdgeConstraints(edge.edge, edge.column);
+            })).ToHashSet();
+
+            /*edgesAndColumns.ForEach(edge =>
+            {
+                result = result.Concat(EdgeConstraints(edge.edge, edge.column)).ToHashSet();
+
+                if(sources.Any(source => source.Name == edge.edge.Source))
+                {
+                    /*var myCommodities = sources.Where(x => x.Name == edge.edge.Source).Select(x => x.Commodity).ToList();
+                    var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
+                    var edgerow = RepeatedZeroList(edges.Count).Select((x, col) => predecessors.Any(x => x.column == col) ? -1 : x).ToList();
+                    result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
+                            new Row(CreateRow(RepeatedZeroList(edges.Count), commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L') : 
+                            new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
                 }
-                
-            });
+                //if(sources.All(x => x.Name != edge.edge.Source))
+                //{
+                /*var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
+
+                var edgerow = RepeatedZeroList(edges.Count).Select((x,col) => predecessors.Any(x => x.column == col)? -1 : x).ToList();
+
+                if (sinks.Any(x => x.Name == edge.edge.Destination))
+                {
+                    var myCommodities = sinks.Where(x => x.Name == edge.edge.Destination).Select(x => x.Commodity).ToList();
+
+                    result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
+                        new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -2, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
+
+                }
+                else if (sources.All(x => x.Name != edge.edge.Source))
+                {
+                    result = result.Concat(RangeList(commodities.Count).Select(x => new Row(CreateRow(edgerow, x, commodities.Count).ToArray(), -1, 'L'))).ToHashSet();
+            }
+            else
+            {
+                var myCommodities = sources.Where(x => x.Name == edge.edge.Source).Select(x => x.Commodity).ToList();
+                result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
+                        new Row(CreateRow(RepeatedZeroList(edges.Count), commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
+            }
+            //}
+            });*/
             return result;
         }
 

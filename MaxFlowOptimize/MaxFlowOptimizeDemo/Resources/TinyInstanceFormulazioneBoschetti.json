@@ -1,6 +1,6 @@
 ﻿{
-  "Nodes": [ "x3", "x4", "x5", "x6" ],
-  "Commodities": [ "c1", "c2", "c3" ],
+  "Nodes": [ "x3", "x4" ],
+  "Commodities": [ "c1","c2"],
   "CommoditiesSources": [
     {
       "Name": "x1",
@@ -11,32 +11,17 @@
       "Name": "x1",
       "Commodity": "c2",
       "Capacity": 2
-    },
-    {
-      "Name": "x2",
-      "Commodity": "c3",
-      "Capacity": 2
     }
   ],
   "CommoditiesSinks": [
     {
-      "Name": "xx5",
-      "Commodity": "c1",
-      "Capacity": -1
-    },
-    {
-      "Name": "xx6",
-      "Commodity": "c1",
-      "Capacity": -1
-    },
-    {
-      "Name": "xx6",
-      "Commodity": "c2",
-      "Capacity": -1
-    },
-    {
       "Name": "xx3",
-      "Commodity": "c3",
+      "Commodity": "c1",
+      "Capacity": -1
+    },
+    {
+      "Name": "xx4",
+      "Commodity": "c2",
       "Capacity": -1
     }
   ],
@@ -47,23 +32,8 @@
       "Weigth": 4
     },
     {
-      "Source": "x1",
-      "Destination": "x4",
-      "Weigth": 4
-    },
-    {
-      "Source": "x1",
-      "Destination": "x5",
-      "Weigth": 4
-    },
-    {
-      "Source": "x2",
-      "Destination": "x4",
-      "Weigth": 4
-    },
-    {
-      "Source": "x2",
-      "Destination": "x5",
+      "Source": "x3",
+      "Destination": "x1",
       "Weigth": 4
     },
     {
@@ -72,40 +42,8 @@
       "Weigth": 4
     },
     {
-      "Source": "x3",
-      "Destination": "x6",
-      "Weigth": 4
-
-    },
-    {
       "Source": "x4",
       "Destination": "x3",
-      "Weigth": 4
-    },
-    {
-      "Source": "x4",
-      "Destination": "x5",
-      "Weigth": 4
-    },
-    {
-      "Source": "x5",
-      "Destination": "x4",
-      "Weigth": 4
-    },
-    {
-      "Source": "x5",
-      "Destination": "x6",
-      "Weigth": 4
-    },
-
-    {
-      "Source": "x6",
-      "Destination": "x3",
-      "Weigth": 4
-    },
-    {
-      "Source": "x6",
-      "Destination": "x5",
       "Weigth": 4
     },
     {
@@ -114,28 +52,18 @@
       "Weigth": 4
     },
     {
-      "Source": "x5",
-      "Destination": "xx5",
-      "Weigth": 4
-    },
-    {
-      "Source": "x6",
-      "Destination": "xx6",
-      "Weigth": 4
-    },
-    {
       "Source": "xx3",
       "Destination": "x3",
       "Weigth": 4
     },
     {
-      "Source": "xx5",
-      "Destination": "x5",
+      "Source": "x4",
+      "Destination": "xx4",
       "Weigth": 4
     },
     {
-      "Source": "xx6",
-      "Destination": "x6",
+      "Source": "xx4",
+      "Destination": "x4",
       "Weigth": 4
     }
 
