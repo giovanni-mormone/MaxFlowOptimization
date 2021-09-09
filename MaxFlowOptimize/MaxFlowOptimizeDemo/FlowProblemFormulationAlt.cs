@@ -96,7 +96,7 @@ namespace MaxFlowOptimizeDemo
 
         private void InitializeObjectiveCoeffs()
         {
-            /*List<double> test = RepeatedZeroList(edges.Count * commodities.Count).ToList();
+            List<double> test = RepeatedZeroList(edges.Count * commodities.Count).ToList();
             edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple => 
             {
                 sinks.Where(sink => sink.Name == couple.edge.Destination).ToList().ForEach(sink2 =>
@@ -106,11 +106,11 @@ namespace MaxFlowOptimizeDemo
                         test[couple.index + commo.CommodityNumber * edges.Count] = 1;
                     }); 
                 });
-            });*/
-            List<double> obj = RepeatedZeroList(edges.Count)
-                                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
+            });
+            //List<double> obj = RepeatedZeroList(edges.Count)
+                //                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
             
-            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//test.ToList();
+            objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
 
         }
 
