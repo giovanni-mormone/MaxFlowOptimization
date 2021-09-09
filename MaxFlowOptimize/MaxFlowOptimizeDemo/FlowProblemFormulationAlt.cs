@@ -112,15 +112,7 @@ namespace MaxFlowOptimizeDemo
 
             objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
 
-        }
-
-        private void InitializeObjectiveCoeffsAlternative()
-        {
-            List<double> obj = RepeatedZeroList(edges.Count)
-                                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? -1.0 : 0.0).ToList();
-            objectiveCoeffs = RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();
-
-        }
+    }
 
         private void InitializeRows()
         {
