@@ -39,7 +39,8 @@ namespace MaxFlowOptimizeDemo
         public void InizializeProblem(JsonProblem loadedProblem)
         {
             InitializeNodesAndEdges(loadedProblem);
-            InitializeObjectiveCoeffs();
+            //InitializeObjectiveCoeffs();
+            InitializeObjectiveCoeffsNewVersion();
             InitializeRows();
         }
 
@@ -110,24 +111,38 @@ namespace MaxFlowOptimizeDemo
                     });
                 });
             });
-            //List<double> obj = RepeatedZeroList(edges.Count)
-            //                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
-
-            objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
+            objectiveCoeffs = test.ToList();
 
         }
 
-        private void InitializeObjectiveCoeffsAlt()
+        private void InitializeObjectiveCoeffsNewVersion()
         {
-
-            List<double> test = Enumerable.Repeat(-1.0, edges.Count * commodities.Count).ToList();
+            List<double> test = RepeatedZeroList(edges.Count * commodities.Count).ToList();
             edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple =>
             {
                 penality.Where(penal => penal.Destination == couple.edge.Destination && penal.Source == couple.edge.Source).ToList().ForEach(sink2 =>
                 {
                     commodities.ToList().ForEach(commo =>
                     {
-                        test[couple.index + commo.CommodityNumber * edges.Count] = -1000;
+                        test[couple.index + commo.CommodityNumber * edges.Count] = 1000;
+                    });
+                });
+            });
+            objectiveCoeffs = test.ToList();
+
+        }
+
+        private void InitializeObjectiveCoeffsAlt()
+        {
+
+            List<double> test = Enumerable.Repeat(1.0, edges.Count * commodities.Count).ToList();
+            edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple =>
+            {
+                penality.Where(penal => penal.Destination == couple.edge.Destination && penal.Source == couple.edge.Source).ToList().ForEach(sink2 =>
+                {
+                    commodities.ToList().ForEach(commo =>
+                    {
+                        test[couple.index + commo.CommodityNumber * edges.Count] = 1000;
                     });
                 });
             });
@@ -143,9 +158,20 @@ namespace MaxFlowOptimizeDemo
             rows = SourceSinkInitialize(true);
             rows = rows.Concat(SourceSinkInitialize(false)).ToHashSet();
 
+
+            rows = rows.Concat(nodes.SelectMany(node =>
+            {
+                var nodeEdges = edges.Select((edge, column) => (edge, column))
+                    .Where(combo => combo.edge.Source == node || combo.edge.Destination == node).ToList();
+                var rowCoeffs = RepeatedZeroList(edges.Count);
+                //se sono una sorgente vuol dire che esce il flusso da me -> -1; se sono destinazione entra -> 1
+                nodeEdges.ForEach(edge => rowCoeffs[edge.column] = edge.edge.Source == node ? -1 : 1);
+                return RangeList(commodities.Count).Select(x => new Row(CreateRow(rowCoeffs, x, commodities.Count).ToArray(), 0, 'E'));
+            })).ToHashSet();
+            /*
             SetContinuityConstraints(FirstContinuityRestraint);
             SetContinuityConstraints(SecondContinuityRestraint);
-
+            */
             rows = rows.Concat(edges.Select((edge, column) =>
                 new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
                     .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
@@ -202,40 +228,6 @@ namespace MaxFlowOptimizeDemo
                 return EdgeConstraints(edge.edge, edge.column);
             })).ToHashSet();
 
-            /*edgesAndColumns.ForEach(edge =>
-            {
-                result = result.Concat(EdgeConstraints(edge.edge, edge.column)).ToHashSet();
-                if(sources.Any(source => source.Name == edge.edge.Source))
-                {
-                    /*var myCommodities = sources.Where(x => x.Name == edge.edge.Source).Select(x => x.Commodity).ToList();
-                    var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
-                    var edgerow = RepeatedZeroList(edges.Count).Select((x, col) => predecessors.Any(x => x.column == col) ? -1 : x).ToList();
-                    result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
-                            new Row(CreateRow(RepeatedZeroList(edges.Count), commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L') : 
-                            new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
-                }
-                //if(sources.All(x => x.Name != edge.edge.Source))
-                //{
-                /*var predecessors = edgesAndColumns.Where(x => x.edge.Destination == edge.edge.Source && !x.edge.Equals(edge.edge)).ToList();
-                var edgerow = RepeatedZeroList(edges.Count).Select((x,col) => predecessors.Any(x => x.column == col)? -1 : x).ToList();
-                if (sinks.Any(x => x.Name == edge.edge.Destination))
-                {
-                    var myCommodities = sinks.Where(x => x.Name == edge.edge.Destination).Select(x => x.Commodity).ToList();
-                    result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
-                        new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), -2, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
-                }
-                else if (sources.All(x => x.Name != edge.edge.Source))
-                {
-                    result = result.Concat(RangeList(commodities.Count).Select(x => new Row(CreateRow(edgerow, x, commodities.Count).ToArray(), -1, 'L'))).ToHashSet();
-            }
-            else
-            {
-                var myCommodities = sources.Where(x => x.Name == edge.edge.Source).Select(x => x.Commodity).ToList();
-                result = result.Concat(commodities.Select(commodity => myCommodities.Contains(commodity.CommodityName) ?
-                        new Row(CreateRow(RepeatedZeroList(edges.Count), commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L') : new Row(CreateRow(edgerow, commodity.CommodityNumber, commodities.Count).ToArray(), 0, 'L'))).ToHashSet();
-            }
-            //}
-            });*/
             return result;
         }
 
@@ -246,7 +238,6 @@ namespace MaxFlowOptimizeDemo
                 new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
                     .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
                 .ToHashSet();
-
         }
 
         private double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Capacity;
@@ -309,7 +300,7 @@ namespace MaxFlowOptimizeDemo
         {
             var contained = commodities.First(commo => commo.CommodityName == values.source.Commodity).CommodityNumber;
             //double weight = values.source.Capacity == -1 ? INFINITY : values.source.Capacity;
-            return new Row(CreateRow(values.rowCoeffs, contained, commodities.Count).ToArray(), 1, 'L');
+            return new Row(CreateRow(values.rowCoeffs, contained, commodities.Count).ToArray(), 1, 'E');
         }
 
         private HashSet<Row> NotContainedCommoditiesConstraints(SourceSinkCoeffs values, Func<HashSet<CommoditySourceSink>, CommoditySourceSink, List<string>> FindCommodities, bool isSource)

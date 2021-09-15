@@ -1,22 +1,22 @@
 ﻿{
   "Nodes": [ "n1", "n2", "n3", "n4" ],
-  "Commodities": [ "k1", "k2" ],
+  "Commodities": [ "k1", "k2","k3" ],
   "CommoditiesSources": [
     {
       "Name": "s1",
       "Commodity": "k1",
-      "Capacity": 1
+      "Capacity": 15
     },
 
     {
       "Name": "s2",
-      "Commodity": "k1",
-      "Capacity": 1
+      "Commodity": "k2",
+      "Capacity": 19
     },
     {
       "Name": "s2",
-      "Commodity": "k2",
-      "Capacity": 1
+      "Commodity": "k3",
+      "Capacity": 70
     }
   ],
   "CommoditiesSinks": [
@@ -37,7 +37,7 @@
     },
     {
       "Name": "t2",
-      "Commodity": "k2",
+      "Commodity": "k3",
       "Capacity": -1
     }
   ],
@@ -45,17 +45,17 @@
     {
       "Source": "s1",
       "Destination": "n1",
-      "Weigth": 32
+      "Weigth": -1
     },
     {
       "Source": "s1",
       "Destination": "n3",
-      "Weigth": 32
+      "Weigth": -1
     },
     {
       "Source": "s2",
       "Destination": "n3",
-      "Weigth": 32
+      "Weigth": -1
     },
     {
       "Source": "n1",

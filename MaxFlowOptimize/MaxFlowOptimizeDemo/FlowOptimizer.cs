@@ -18,9 +18,11 @@ namespace MaxFlowOptimizeDemo
     {
         private WrapProblem problem;
         private JsonProblem actualProblem;
+        private JsonProblem originalProblem;
         private readonly IFlowProblem flow;
         private Result actualResult;
         private bool isFirstFormulation;
+        private bool initialized = false;
         /// <summary>
         /// Constructor of a flow optimizer;
         /// </summary>
@@ -42,21 +44,22 @@ namespace MaxFlowOptimizeDemo
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                     actualProblem.Edges.Append(Edge).ToHashSet());
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
         public void AddPenalityEdge(Edge Edge)
         {
-            //if ((actualProblem.Nodes.Contains(Edge.Source) || actualProblem.CommoditiesSources.Any(x => x.Name == Edge.Source)) &&
-            // (actualProblem.Nodes.Contains(Edge.Destination) || actualProblem.CommoditiesSinks.Any(x => x.Name == Edge.Destination)))
-            //{
             actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                 actualProblem.Edges.Append(Edge).ToHashSet());
-
             flow.AddPenality(Edge);
-            RecreateProblem();
-            //}
+            if (initialized)
+            {
+                RecreateProblem();
+            }
         }
 
         public void UpdateEdge(Edge Edge)
@@ -65,17 +68,26 @@ namespace MaxFlowOptimizeDemo
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                     actualProblem.Edges.Select(edge => edge.Equals(Edge) ? Edge : edge).ToHashSet());
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
+
+        private void updateNodeEdges(string Node, HashSet<Edge> Edges) => actualProblem = new JsonProblem(actualProblem.Nodes.Append(Node).ToHashSet(),
+                actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks, actualProblem.Edges.Concat(Edges).ToHashSet());
+
 
         public void AddNode(string Name, HashSet<Edge> Edges)
         {
             if (!actualProblem.Nodes.Contains(Name))
             {
-                actualProblem = new JsonProblem(actualProblem.Nodes.Append(Name).ToHashSet(),
-                actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks, actualProblem.Edges.Concat(Edges).ToHashSet());
-                RecreateProblem();
+                updateNodeEdges(Name, Edges);
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -85,18 +97,24 @@ namespace MaxFlowOptimizeDemo
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Append(Sink).ToHashSet(),
                        actualProblem.Edges);
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
 
         }
 
         public void AddSource(CommoditySourceSink Source)
         {
-            if (actualProblem.CommoditiesSources.All(x => !Source.Equals(Source)) && actualProblem.Commodities.Contains(Source.Commodity))
+            if (actualProblem.CommoditiesSources.All(x => !Source.Equals(x)) && actualProblem.Commodities.Contains(Source.Commodity))
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities,
                     actualProblem.CommoditiesSources.Append(Source).ToHashSet(), actualProblem.CommoditiesSinks, actualProblem.Edges);
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -117,7 +135,6 @@ namespace MaxFlowOptimizeDemo
 
         public void PrintProblemRows()
         {
-
             Console.WriteLine(CreateVariableNames());
             Console.WriteLine("MAX," + string.Join(",", flow.GetObjectiveCoeffs().Select(x => $"{x}").ToArray()));
             flow.GetRows().ToList().ForEach(x => Console.WriteLine(x));
@@ -129,8 +146,46 @@ namespace MaxFlowOptimizeDemo
             using StreamReader file = File.OpenText(path);
             using JsonTextReader reader = new JsonTextReader(file);
             var jsonProblem = serializer.Deserialize<JsonProblem>(reader);
+            originalProblem = jsonProblem;
             actualProblem = jsonProblem;
-            InitializeWrapperProblem(jsonProblem);
+
+
+            if (isFirstFormulation)
+            {
+                modifyProblem();
+                flow.InizializeProblem(actualProblem);
+            }
+            else
+            {
+                flow.InizializeProblemAlternativeFormulation(actualProblem);
+            }
+
+            initialized = true;
+            InitializeWrapperProblem(actualProblem);
+        }
+
+        private void modifyProblem()
+        {
+            actualProblem.Commodities.ToList().ForEach(commodity =>
+            {
+                var sinks = actualProblem.CommoditiesSinks.Where(sink => sink.Commodity == commodity).ToList();
+                var source = actualProblem.CommoditiesSources.First(source => source.Commodity == commodity);
+                sinks.ForEach(sink =>
+                {
+                    string newCommodity = source.Name+sink.Name+commodity;
+                    string dummySink = sink.Name + commodity;
+                    AddCommodity(newCommodity);
+                    AddSource(new CommoditySourceSink(source.Name, newCommodity, source.Capacity));
+                    AddSink(new CommoditySourceSink(dummySink, newCommodity, -1));
+                    var oldEdges = actualProblem.Edges.Where(edge => edge.Destination == sink.Name || edge.Source == sink.Name).ToHashSet();
+                    RemoveSink(sink.Name, commodity);
+                    updateNodeEdges(sink.Name, oldEdges);
+                    AddEdge(new Edge(-1, sink.Name, dummySink));
+                    AddPenalityEdge(new Edge(-1, source.Name, dummySink));
+                });
+                RemoveSource(source.Name, source.Commodity);
+                RemoveCommodity(commodity);
+            });
         }
 
         public void RemoveCommodity(string Commodity)
@@ -141,7 +196,10 @@ namespace MaxFlowOptimizeDemo
                 CheckIfLastCommoditySink(Commodity);
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources.Where(x => !x.Commodity.Equals(Commodity)).ToHashSet(),
                 actualProblem.CommoditiesSinks.Where(x => !x.Commodity.Equals(Commodity)).ToHashSet(), actualProblem.Edges);
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -151,7 +209,10 @@ namespace MaxFlowOptimizeDemo
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                    actualProblem.Edges.Where(x => !x.Equals(Edge)).ToHashSet());
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -162,7 +223,10 @@ namespace MaxFlowOptimizeDemo
                 actualProblem = new JsonProblem(actualProblem.Nodes.Where(x => !x.Equals(Name)).ToHashSet(),
                                 actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
                                 actualProblem.Edges.Where(x => !x.Source.Equals(Name) && !x.Destination.Equals(Name)).ToHashSet());
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -176,21 +240,27 @@ namespace MaxFlowOptimizeDemo
                     actualProblem.CommoditiesSinks, actualProblem.Edges);
                 //check
                 CheckIfLastCommoditySource(Source);
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
         public void RemoveSink(string Sink, string Commodity)
         {
             CommoditySourceSink toRemove = new CommoditySourceSink(Sink, Commodity);
-            if (actualProblem.CommoditiesSources.Contains(toRemove))
+            if (actualProblem.CommoditiesSinks.Contains(toRemove))
             {
                 actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities,
                     actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks.Where(x => !x.Equals(toRemove)).ToHashSet(),
                     actualProblem.Edges);
                 //check
                 CheckIfLastCommoditySink(Sink);
-                RecreateProblem();
+                if (initialized)
+                {
+                    RecreateProblem();
+                }
             }
         }
 
@@ -250,7 +320,7 @@ namespace MaxFlowOptimizeDemo
         {
             int numberOfVariables = jsonProblem.Edges.Count * jsonProblem.Commodities.Count;
             double objconst = 0.0;
-            int objsens = WrapperCoin.SOLV_OBJSENS_MAX;
+            int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
             List<double> lowerBounds = Enumerable.Repeat(0.0, numberOfVariables).ToList();
             List<double> upperBounds = Enumerable.Repeat(infinite, numberOfVariables).ToList();
@@ -260,14 +330,6 @@ namespace MaxFlowOptimizeDemo
             char[] c = Array.Empty<char>();
             int[] i = Array.Empty<int>();
 
-            if (isFirstFormulation)
-            {
-                flow.InizializeProblem(actualProblem);
-            }
-            else
-            {
-                flow.InizializeProblemAlternativeFormulation(actualProblem);
-            }
             double[] objectCoeffs = flow.GetObjectiveCoeffs();
             List<Row> rows = flow.GetRows().ToList();
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n

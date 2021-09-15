@@ -1,7 +1,7 @@
 ﻿{
  
   "Nodes": [ "n1", "n2", "n3", "n4","n5","n6","n7","n8" ],
-  "Commodities": [ "k1", "k2" ],
+  "Commodities": [ "k1", "k2" ,"k3","k4"],
   "CommoditiesSources": [
     {
       "Name": "s1",
@@ -11,16 +11,16 @@
     {
       "Name": "s1",
       "Commodity": "k2",
-      "Capacity": 100
+      "Capacity": 70
     },
     {
       "Name": "s2",
-      "Commodity": "k1",
-      "Capacity": 165
+      "Commodity": "k3",
+      "Capacity": 60
     },
     {
       "Name": "s3",
-      "Commodity": "k2",
+      "Commodity": "k4",
       "Capacity": 93
     }
   ],
@@ -28,27 +28,27 @@
     {
       "Name": "t1",
       "Commodity": "k1",
-      "Capacity": 2000
+      "Capacity": -1
     },
     {
       "Name": "t1",
-      "Commodity": "k2",
-      "Capacity": 2000
-    },
-    {
-      "Name": "t2",
-      "Commodity": "k1",
-      "Capacity": 2000
+      "Commodity": "k4",
+      "Capacity": -1
     },
     {
       "Name": "t2",
       "Commodity": "k2",
-      "Capacity": 2000
+      "Capacity": -1
+    },
+    {
+      "Name": "t2",
+      "Commodity": "k3",
+      "Capacity": -1
     },
     {
       "Name": "t3",
-      "Commodity": "k2",
-      "Capacity": 2000
+      "Commodity": "k4",
+      "Capacity": -1
     }
   ],
   "Edges": [

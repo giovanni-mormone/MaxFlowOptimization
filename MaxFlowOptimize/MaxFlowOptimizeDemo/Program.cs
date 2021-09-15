@@ -10,11 +10,7 @@ namespace MaxFlowOptimizeDemo
 	class Program
 	{
 		// record of config parameters
-		public record parms (
-			bool isVerbose,
-			string problemFile,
-			int nmax
-		);
+		public record parms (bool isVerbose, string problemFile, int nmax);
 
 		static int Main()
 		{
@@ -29,18 +25,17 @@ namespace MaxFlowOptimizeDemo
       {
 			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblemFormulationAlt(edgeMultiplier),true);
 			flowOptimizer.ReadFromJSON($"../../../Resources/{problemName}");
-			///flowOptimizer.AddPenalityEdge(new Edge(4, "x1", "xx3"));
-			//flowOptimizer.AddPenalityEdge(new Edge(4, "x1", "xx4")); 
-			
 			Console.WriteLine("Problema Caricato:");
 			if (isVerbose)
 				flowOptimizer.PrintProblemRows();
 			Result result = flowOptimizer.OptimizeProblem();
 			Console.WriteLine(result);
-			flowOptimizer.SaveMPS($"../../../Resources/loadedProblem-{problemName}");
+//			flowOptimizer.SaveMPS($"../../../Resources/loadedProblem-{problemName}");
 			flowOptimizer.SaveCSV($"../../../Resources/loadedProblem-{problemName}");
-			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
+//			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
 		}
+
+
 
 		static parms readConfig()
 		{
