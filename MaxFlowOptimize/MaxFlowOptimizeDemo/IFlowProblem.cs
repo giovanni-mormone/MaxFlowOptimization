@@ -44,5 +44,7 @@ namespace MaxFlowOptimizeDemo
         /// <param name="optimizedValues">The optimal values for each variable.</param>
         /// <returns>The <see cref="Result"/> of the optimization.</returns>
         Result CreateResult(double result, List<double> optimizedValues);
+
+        void AddPenality(Edge edge);
     }
 }

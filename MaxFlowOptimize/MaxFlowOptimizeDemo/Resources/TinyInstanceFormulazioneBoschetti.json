@@ -17,12 +17,12 @@
     {
       "Name": "xx3",
       "Commodity": "c1",
-      "Capacity": -1
+      "Capacity": 2
     },
     {
       "Name": "xx4",
       "Commodity": "c2",
-      "Capacity": -1
+      "Capacity": 2
     }
   ],
   "Edges": [

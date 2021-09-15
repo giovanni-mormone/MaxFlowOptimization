@@ -46,6 +46,19 @@ namespace MaxFlowOptimizeDemo
             }
         }
 
+        public void AddPenalityEdge(Edge Edge)
+        {
+            //if ((actualProblem.Nodes.Contains(Edge.Source) || actualProblem.CommoditiesSources.Any(x => x.Name == Edge.Source)) &&
+               // (actualProblem.Nodes.Contains(Edge.Destination) || actualProblem.CommoditiesSinks.Any(x => x.Name == Edge.Destination)))
+            //{
+                actualProblem = new JsonProblem(actualProblem.Nodes, actualProblem.Commodities, actualProblem.CommoditiesSources, actualProblem.CommoditiesSinks,
+                    actualProblem.Edges.Append(Edge).ToHashSet());
+
+                flow.AddPenality(Edge);
+                RecreateProblem();
+            //}
+        }
+
         public void UpdateEdge(Edge Edge)
         {
             if (actualProblem.Edges.Contains(Edge))

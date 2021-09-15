@@ -131,5 +131,7 @@ namespace MaxFlowOptimizeDemo
         /// <param name="Commodity"> The <see cref="string"/> commodity that is going to be added to the given source.</param>
         void PrintProblemRows();
 
+        void AddPenalityEdge(Edge Edge);
+
     }
 }

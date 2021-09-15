@@ -174,6 +174,11 @@ namespace MaxFlowOptimizeDemo
             throw new NotImplementedException();
         }
 
+        public void AddPenality(Edge edge)
+        {
+            throw new NotImplementedException();
+        }
+
         //record used to store the data of a given source/sink.
         private record SourceSinkCoeffs(JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs);
         //Static private func section;
