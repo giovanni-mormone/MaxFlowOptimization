@@ -8,7 +8,7 @@ using MaxFlowOptimizeDemo.Utils;
 
 namespace MaxFlowOptimizeDemo
 {
-    
+
     /// <summary>
     /// A class used to model a flow problem, using a <see cref="JsonProblem"/> as a source to create and model a flow
     /// problem.
@@ -49,8 +49,8 @@ namespace MaxFlowOptimizeDemo
         /// <returns></returns>
         public Result CreateResult(double result, List<double> optimizedValues)
         {
-            var x = commodities.SelectMany(commodity => edges.Select((edge,edgeIndex) => 
-                new OptimizedEdge(edge.Source,edge.Destination, commodity.CommodityName, optimizedValues.ElementAt(ComputeIndexInEdgeResult(edgeIndex,commodity.CommodityNumber, edges.Count)))));
+            var x = commodities.SelectMany(commodity => edges.Select((edge, edgeIndex) =>
+                new OptimizedEdge(edge.Source, edge.Destination, commodity.CommodityName, optimizedValues.ElementAt(ComputeIndexInEdgeResult(edgeIndex, commodity.CommodityNumber, edges.Count)))));
             return new Result(result, x.ToList());
         }
 
@@ -103,7 +103,7 @@ namespace MaxFlowOptimizeDemo
             SetContinuityConstraints(loadedProblem, FirstContinuityRestraint);
             SetContinuityConstraints(loadedProblem, SecondContinuityRestraint);
 
-            rows = rows.Concat(edges.Select((edge, column) => 
+            rows = rows.Concat(edges.Select((edge, column) =>
                 new Row(RangeList(loadedProblem.Commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(loadedProblem.Edges.Count)
                     .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
                 .ToHashSet();
@@ -152,7 +152,7 @@ namespace MaxFlowOptimizeDemo
             return _SourceSinkInitialize(IsSource ? sources.OrderBy(x => x.Name).ToList() : sinks.OrderBy(x => x.Name).ToList(), new());
         }
 
-       //method used to create the SourceSinkCoeffs for the given CommoditySourceSink.
+        //method used to create the SourceSinkCoeffs for the given CommoditySourceSink.
         private SourceSinkCoeffs Metodino(JsonProblem loadedProblem, CommoditySourceSink source, Func<Edge, string, bool> findSourceSink)
         {
             var sourceEdges = edges.Select((edge, column) => (edge, column)).Where(edge => findSourceSink(edge.edge, source.Name)).ToList();
@@ -167,6 +167,16 @@ namespace MaxFlowOptimizeDemo
             double weight = values.source.Capacity == -1 ? INFINITY : values.source.Capacity;
             return new Row(CreateRow(values.rowCoeffs, contained, values.loadedProblem.Commodities.Count).ToArray(), 1, 'L');
 
+        }
+
+        public void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddPenality(Edge edge)
+        {
+            throw new NotImplementedException();
         }
 
         //record used to store the data of a given source/sink.

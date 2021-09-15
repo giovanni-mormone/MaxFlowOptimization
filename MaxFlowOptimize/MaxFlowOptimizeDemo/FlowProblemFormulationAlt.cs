@@ -25,6 +25,7 @@ namespace MaxFlowOptimizeDemo
         private HashSet<Row> rows;
         private HashSet<Commodity> commodities;
         private readonly int nMaxMultiplier;
+        private HashSet<Edge> penality = new();
 
         public FlowProblemFormulationAlt(int nMax)
         {
@@ -45,7 +46,7 @@ namespace MaxFlowOptimizeDemo
         public void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem)
         {
             InitializeNodesAndEdges(loadedProblem);
-            InitializeObjectiveCoeffs();
+            InitializeObjectiveCoeffsAlt();
             InitializeRowsAlternative();
         }
         /// <summary>
@@ -73,6 +74,8 @@ namespace MaxFlowOptimizeDemo
         /// <returns>An <see cref="Array"/> of <see cref="double"/> representing the coeffs of the objective function.</returns>
         public double[] GetObjectiveCoeffs() => objectiveCoeffs.ToArray();
 
+
+        public void AddPenality(Edge edge) => penality.Add(edge);
         private static List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
         {
             var zeroRow = RepeatedZeroList(coeffs.Count);
@@ -112,7 +115,28 @@ namespace MaxFlowOptimizeDemo
 
             objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
 
-    }
+        }
+
+        private void InitializeObjectiveCoeffsAlt()
+        {
+
+            List<double> test = Enumerable.Repeat(-1.0, edges.Count * commodities.Count).ToList();
+            edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple =>
+            {
+                penality.Where(penal => penal.Destination == couple.edge.Destination && penal.Source == couple.edge.Source).ToList().ForEach(sink2 =>
+                {
+                    commodities.ToList().ForEach(commo =>
+                    {
+                        test[couple.index + commo.CommodityNumber * edges.Count] = -1000;
+                    });
+                });
+            });
+            //List<double> obj = RepeatedZeroList(edges.Count)
+            //                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
+
+            objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
+
+        }
 
         private void InitializeRows()
         {

@@ -9,7 +9,7 @@ namespace MaxFlowOptimizeDemo
     /// </summary>
     interface IFlowOptimizer
     {
-        
+
         /// <summary>
         /// Method used to read a Flow problem from the json file specified in the path parameter
         /// </summary>
@@ -130,6 +130,8 @@ namespace MaxFlowOptimizeDemo
         /// <param name="Source">The <see cref="string"/> the name of the source to which the commodity is going to be added.</param>
         /// <param name="Commodity"> The <see cref="string"/> commodity that is going to be added to the given source.</param>
         void PrintProblemRows();
+
+        void AddPenalityEdge(Edge Edge);
 
     }
 }

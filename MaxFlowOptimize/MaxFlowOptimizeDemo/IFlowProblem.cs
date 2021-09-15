@@ -22,6 +22,11 @@ namespace MaxFlowOptimizeDemo
         /// <param name="loadedProblem"> The <see cref="JsonProblem"/> to read and initialize</param>
         void InizializeProblem(JsonProblem loadedProblem);
         /// <summary>
+        /// This method initializes the problem reading a graph from the provided json and using an alternative formulation
+        /// </summary>
+        /// <param name="loadedProblem"> The <see cref="JsonProblem"/> to read and initialize</param>
+        void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem);
+        /// <summary>
         /// This method returns the objective coeffs of the problem to initialize.
         /// </summary>
         /// <returns>An <see cref="Array"/> of <see cref="double"/> representing the objective function
@@ -39,5 +44,7 @@ namespace MaxFlowOptimizeDemo
         /// <param name="optimizedValues">The optimal values for each variable.</param>
         /// <returns>The <see cref="Result"/> of the optimization.</returns>
         Result CreateResult(double result, List<double> optimizedValues);
+
+        void AddPenality(Edge edge);
     }
 }
