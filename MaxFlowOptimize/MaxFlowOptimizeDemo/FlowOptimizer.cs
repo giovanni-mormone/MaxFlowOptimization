@@ -332,7 +332,7 @@ namespace MaxFlowOptimizeDemo
         }
         private void InitializeWrapperProblem(JsonProblem jsonProblem)
         {
-            int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + originalProblem.Commodities.Count);
+            int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + (isFirstFormulation ? originalProblem.Commodities.Count : 0));
             double objconst = 0.0;
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
