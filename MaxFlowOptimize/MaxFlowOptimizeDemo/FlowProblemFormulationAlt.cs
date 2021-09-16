@@ -152,7 +152,7 @@ namespace MaxFlowOptimizeDemo
             //List<double> obj = RepeatedZeroList(edges.Count)
             //                       .Select((x, y) => edges.Select((xx, yy) => sinks.Any(x => x.Name == xx.Destination) ? yy : -1).Contains(y) ? 1.0 : 0.0).ToList();
 
-            objectiveCoeffs = test.ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
+            objectiveCoeffs = test.Concat(RepeatedZeroList(edges.Count * commodities.Count)).ToList();//RangeList(commodities.Count).SelectMany(_ => obj.ToList()).ToList();//
 
         }
 
@@ -268,7 +268,7 @@ namespace MaxFlowOptimizeDemo
             rows = SetInequalitiesConstraints();
             rows = rows.Concat(edges.Select((edge, column) =>
                 new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
-                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
+                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).Concat(RepeatedZeroList(edges.Count * commodities.Count)).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
                 .ToHashSet();
         }
 

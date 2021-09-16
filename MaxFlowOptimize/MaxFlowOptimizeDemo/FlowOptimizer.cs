@@ -332,7 +332,7 @@ namespace MaxFlowOptimizeDemo
         }
         private void InitializeWrapperProblem(JsonProblem jsonProblem)
         {
-            int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + (isFirstFormulation ? originalProblem.Commodities.Count : 0));
+            int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + (isFirstFormulation ? originalProblem.Commodities.Count : jsonProblem.Commodities.Count));
             double objconst = 0.0;
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
@@ -349,7 +349,7 @@ namespace MaxFlowOptimizeDemo
             WrapperCoin.LoadProblem(problem, numberOfVariables, 0, 0, 0, objsens, objconst, objectCoeffs, lowerBounds.ToArray(), upperBounds.ToArray(), c, n, null, matrixBegin.ToArray(), matrixCount.ToArray(), i, n
                 , null, null, "");
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
-            List<char> columnType = Enumerable.Repeat('I', numberOfVariables).ToList();
+            List<char> columnType = Enumerable.Repeat('B', numberOfVariables).ToList();
             WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
