@@ -34,7 +34,7 @@ namespace MaxFlowOptimizeDemo
         /// Method used to initialize a <see cref="IFlowProblem"/>.
         /// </summary>
         /// <param name="loadedProblem">The <see cref="JsonProblem"/> to initialize.</param>
-        public void InizializeProblem(JsonProblem loadedProblem)
+        public void InizializeProblem(JsonProblem loadedProblem, Dictionary<string, List<string>> commoidityGroups)
         {
             InitializeNodesAndEdges(loadedProblem);
             InitializeObjectiveCoeffs(loadedProblem);

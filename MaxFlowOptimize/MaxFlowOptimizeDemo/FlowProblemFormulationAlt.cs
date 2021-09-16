@@ -26,6 +26,7 @@ namespace MaxFlowOptimizeDemo
         private HashSet<Commodity> commodities;
         private readonly int nMaxMultiplier;
         private HashSet<Edge> penality = new();
+        Dictionary<string, List<string>> commoidityGroups = new();
 
         public FlowProblemFormulationAlt(int nMax)
         {
@@ -36,8 +37,9 @@ namespace MaxFlowOptimizeDemo
         /// Method used to initialize a <see cref="IFlowProblem"/>.
         /// </summary>
         /// <param name="loadedProblem">The <see cref="JsonProblem"/> to initialize.</param>
-        public void InizializeProblem(JsonProblem loadedProblem)
+        public void InizializeProblem(JsonProblem loadedProblem, Dictionary<string, List<string>> commoidityGroups)
         {
+            this.commoidityGroups = commoidityGroups;
             InitializeNodesAndEdges(loadedProblem);
             //InitializeObjectiveCoeffs();
             InitializeObjectiveCoeffsNewVersion();
@@ -77,12 +79,13 @@ namespace MaxFlowOptimizeDemo
 
 
         public void AddPenality(Edge edge) => penality.Add(edge);
-        private static List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
+        private List<double> CreateRow(List<double> coeffs, int commodity, int totalCommodities)
         {
             var zeroRow = RepeatedZeroList(coeffs.Count);
+            var finalZero = RepeatedZeroList(coeffs.Count * commoidityGroups.Keys.Count);
             List<double> _createRow(IEnumerable<double> origin, int step) => step switch
             {
-                _ when step == totalCommodities => origin.ToList(),
+                _ when step == totalCommodities => origin.Concat(finalZero).ToList(),
                 _ when step == commodity => _createRow(origin.Concat(coeffs), step + 1),
                 _ => _createRow(origin.Concat(zeroRow), step + 1)
             };
@@ -117,7 +120,7 @@ namespace MaxFlowOptimizeDemo
 
         private void InitializeObjectiveCoeffsNewVersion()
         {
-            List<double> test = RepeatedZeroList(edges.Count * commodities.Count).ToList();
+            List<double> test = RepeatedZeroList(edges.Count * (commodities.Count + commoidityGroups.Keys.Count)).ToList();
             edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple =>
             {
                 penality.Where(penal => penal.Destination == couple.edge.Destination && penal.Source == couple.edge.Source).ToList().ForEach(sink2 =>
@@ -168,14 +171,43 @@ namespace MaxFlowOptimizeDemo
                 nodeEdges.ForEach(edge => rowCoeffs[edge.column] = edge.edge.Source == node ? -1 : 1);
                 return RangeList(commodities.Count).Select(x => new Row(CreateRow(rowCoeffs, x, commodities.Count).ToArray(), 0, 'E'));
             })).ToHashSet();
+
+            commoidityGroups.Select(pair => pair.Value).ToList().ForEach(commodities =>
+            {
+                rows = rows.Concat(edges.Where(edge => sinks.All(sink => sink.Name != edge.Destination)).Select((edge,column)=>
+                    new Row(constructMultiCommodityRow(commodities, edge, column), 0, 'L'))).ToHashSet();
+            });
             /*
-            SetContinuityConstraints(FirstContinuityRestraint);
-            SetContinuityConstraints(SecondContinuityRestraint);
-            */
+            x = commoidityGroups.Select(pair =>
+               edges.Where(edge => sinks.All(sink => sink.Name != edge.Destination)).Select((edge, column) =>
+                   new Row(constructMultiCommodityRow(pair.Value), nMaxMultiplier, 'L')));
+  */
+
+            /*var med = edges.Where(edge => sinks.All(sink => sink.Name != edge.Destination)).Select((edge,column) =>
+                new Row(constructMultiCommodityRow(), nMaxMultiplier, 'L'))).ToHashSet();
+            /*/
             rows = rows.Concat(edges.Select((edge, column) =>
-                new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
-                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
+                new Row(RangeList(commodities.Count + commoidityGroups.Keys.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
+                    .Select((value, col) => col == column && commodityNumber >= commodities.Count? FindAkCommodity(findChildCommodityNumber(commodityNumber)) : value).ToList()).ToArray(), edge.Weigth == -1 ? INFINITY : edge.Weigth, 'L')))
                 .ToHashSet();
+        }
+
+        private int findChildCommodityNumber(int num)
+        {
+            num = num - commodities.Count();
+            var key = commoidityGroups.Keys.ToList().ElementAt(num);
+            var ret = commodities.First(x => x.CommodityName == commoidityGroups[key].First()).CommodityNumber;
+            return ret;
+        }
+
+        private double[] constructMultiCommodityRow(List<string> commo, Edge edge, int column)
+        {
+
+            var arra = RangeList(commodities.Count + commoidityGroups.Keys.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count).
+                Select((value, col) => col == column && commodities.Where(x => commo.Contains(x.CommodityName)).Any(x => x.CommodityNumber == commodityNumber) ? 1.0 : 
+                col == column && commodityNumber >= commodities.Count && commodities.Where(x => commo.Contains(x.CommodityName)).Any(x => x.CommodityNumber == findChildCommodityNumber(commodityNumber)) ? -nMaxMultiplier : 0).ToList()).ToArray();
+            
+            return arra;
         }
 
         private HashSet<Row> EdgeConstraints(Edge edge, int column)

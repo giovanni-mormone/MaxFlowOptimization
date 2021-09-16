@@ -1,5 +1,5 @@
 {
 	"isVerbose": true,
-	"problemFile": "problem2.json",
-	"nmax": 2
+	"problemFile": "TinyInstanceFormulazioneBoschetti.json",
+	"nmax": 100
 }

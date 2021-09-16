@@ -20,7 +20,9 @@ namespace MaxFlowOptimizeDemo
         /// This method initializes the problem reading a graph from the provided json.
         /// </summary>
         /// <param name="loadedProblem"> The <see cref="JsonProblem"/> to read and initialize</param>
-        void InizializeProblem(JsonProblem loadedProblem);
+        /// <param name="commodityGroups"> The <see cref="Dictionary{TKey, TValue}"/> used to represent the pairs of true commodity
+        /// adn generated source/destination commodities</param>
+        void InizializeProblem(JsonProblem loadedProblem, Dictionary<String, List<String>> commodityGroups);
         /// <summary>
         /// This method initializes the problem reading a graph from the provided json and using an alternative formulation
         /// </summary>

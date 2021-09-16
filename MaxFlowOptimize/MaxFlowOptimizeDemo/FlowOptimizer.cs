@@ -23,6 +23,7 @@ namespace MaxFlowOptimizeDemo
         private Result actualResult;
         private bool isFirstFormulation;
         private bool initialized = false;
+        private Dictionary<string, List<String>> commodityGroups;
         /// <summary>
         /// Constructor of a flow optimizer;
         /// </summary>
@@ -146,17 +147,25 @@ namespace MaxFlowOptimizeDemo
             using StreamReader file = File.OpenText(path);
             using JsonTextReader reader = new JsonTextReader(file);
             var jsonProblem = serializer.Deserialize<JsonProblem>(reader);
-            originalProblem = jsonProblem;
+            originalProblem = new JsonProblem(jsonProblem.Nodes.Select(x => x).ToHashSet(), jsonProblem.Commodities.Select(x => x).ToHashSet(),
+                jsonProblem.CommoditiesSources.Select(x => x).ToHashSet(), jsonProblem.CommoditiesSinks.Select(x => x).ToHashSet(), jsonProblem.Edges.Select(x => x).ToHashSet());
             actualProblem = jsonProblem;
 
 
             if (isFirstFormulation)
             {
                 modifyProblem();
-                flow.InizializeProblem(actualProblem);
+                flow.InizializeProblem(actualProblem, commodityGroups);
             }
             else
             {
+                actualProblem.CommoditiesSources.ToList().ForEach(source =>
+                {
+                    actualProblem.CommoditiesSinks.ToList().ForEach(sink =>
+                    {
+                        AddPenalityEdge(new Edge(4, source.Name, sink.Name));
+                    });
+                });
                 flow.InizializeProblemAlternativeFormulation(actualProblem);
             }
 
@@ -166,10 +175,13 @@ namespace MaxFlowOptimizeDemo
 
         private void modifyProblem()
         {
+            commodityGroups = new();
+
             actualProblem.Commodities.ToList().ForEach(commodity =>
             {
                 var sinks = actualProblem.CommoditiesSinks.Where(sink => sink.Commodity == commodity).ToList();
                 var source = actualProblem.CommoditiesSources.First(source => source.Commodity == commodity);
+                List<String> associatedCommo = new();
                 sinks.ForEach(sink =>
                 {
                     string newCommodity = source.Name+sink.Name+commodity;
@@ -182,9 +194,11 @@ namespace MaxFlowOptimizeDemo
                     updateNodeEdges(sink.Name, oldEdges);
                     AddEdge(new Edge(-1, sink.Name, dummySink));
                     AddPenalityEdge(new Edge(-1, source.Name, dummySink));
+                    associatedCommo.Add(newCommodity);
                 });
                 RemoveSource(source.Name, source.Commodity);
                 RemoveCommodity(commodity);
+                commodityGroups.Add(commodity, associatedCommo);
             });
         }
 
@@ -318,7 +332,7 @@ namespace MaxFlowOptimizeDemo
         }
         private void InitializeWrapperProblem(JsonProblem jsonProblem)
         {
-            int numberOfVariables = jsonProblem.Edges.Count * jsonProblem.Commodities.Count;
+            int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + originalProblem.Commodities.Count);
             double objconst = 0.0;
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
@@ -342,6 +356,11 @@ namespace MaxFlowOptimizeDemo
         private string CreateVariableNames() => string.Join(",", actualProblem.Commodities.SelectMany(commodity => (actualProblem.Edges.Select(edge =>
         {
             return commodity + "_" + edge.Source + "->" + edge.Destination;
-        }))).ToList().Select(x => $"{x}")).ToString();
+        }))).Concat(isFirstFormulation ? _createXiName() : new ()).ToList().Select(x => $"{x}")).ToString();
+
+        private List<string> _createXiName() => originalProblem.Commodities.SelectMany(commodity => actualProblem.Edges.Select(edge =>
+        {
+            return "Xi" + commodity + edge.Source + "->" + edge.Destination;
+        })).ToList();
     }
 }
