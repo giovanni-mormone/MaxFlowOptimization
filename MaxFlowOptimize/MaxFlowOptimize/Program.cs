@@ -10,20 +10,17 @@ namespace MaxFlowOptimizeDemo
 	class Program
 	{
 		// record of config parameters
-		public record parms (bool isVerbose, string problemFile, int nmax);
+		public record LoadingParameters (bool isVerbose, string problemFile, int nmax);
 
-		static int Main()
+		static void Main()
 		{
-			parms parConfig = readConfig();
-			RunOptimiziation(parConfig.problemFile, 
-			                 parConfig.nmax,
-								  parConfig.isVerbose);
-			return 0;
+			LoadingParameters parConfig = readConfig();
+			RunOptimiziation(parConfig.problemFile, parConfig.nmax, parConfig.isVerbose);
 		}
 
 		private static void RunOptimiziation(string problemName, int edgeMultiplier, bool isVerbose)
       {
-			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblemFormulationAlt(edgeMultiplier), true);
+			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblemFormulation(edgeMultiplier), true);
 			flowOptimizer.ReadFromJSON($"../../../Resources/{problemName}");
 			Console.WriteLine("Problema Caricato:");
 			if (isVerbose)
@@ -33,7 +30,7 @@ namespace MaxFlowOptimizeDemo
 //			flowOptimizer.SaveMPS($"../../../Resources/loadedProblem-{problemName}");
 			flowOptimizer.SaveCSV($"../../../Resources/loadedProblem-{problemName}");
 			//			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
-			flowOptimizer.LagrangianTest();
+			flowOptimizer.LagrangianOptimization();
 			if (isVerbose)
 				flowOptimizer.PrintProblemRows();
 			result = flowOptimizer.OptimizeProblem();
@@ -44,18 +41,18 @@ namespace MaxFlowOptimizeDemo
 
 
 
-		static parms readConfig()
+		static LoadingParameters readConfig()
 		{
 			{
 				string path = "";
 				StreamReader fileConfig = null;
-				parms p = null;
+				LoadingParameters p = null;
 				try
 				{
 					string confPath = File.Exists("MaxFlowConfig.json") ? "MaxFlowConfig.json" : @"..\..\..\MaxFlowConfig.json";
 					fileConfig = new StreamReader(confPath);
 					string jConfig = fileConfig.ReadToEnd();
-					p = JsonConvert.DeserializeObject<parms>(jConfig);
+					p = JsonConvert.DeserializeObject<LoadingParameters>(jConfig);
 				}
 				catch (Exception ex)
 				{

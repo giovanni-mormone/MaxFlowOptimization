@@ -45,58 +45,58 @@
     {
       "Source": "s1",
       "Destination": "n1",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "s1",
       "Destination": "n3",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "s2",
       "Destination": "n3",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "n1",
       "Destination": "n2",
-      "Weigth": 70
+      "Weight": 70
     },
     {
       "Source": "n1",
       "Destination": "n4",
-      "Weigth": 70
+      "Weight": 70
     },
     {
       "Source": "n3",
       "Destination": "n2",
-      "Weigth": 70
+      "Weight": 70
     },
     {
       "Source": "n3",
       "Destination": "n4",
-      "Weigth": 70
+      "Weight": 70
 
     },
     {
       "Source": "n2",
       "Destination": "t1",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "n2",
       "Destination": "t2",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "n4",
       "Destination": "t1",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "n4",
       "Destination": "t2",
-      "Weigth": -1
+      "Weight": -1
     }
   ]
 } 

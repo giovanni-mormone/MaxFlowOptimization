@@ -39,7 +39,6 @@ namespace MaxFlowOptimizeDemo
         /// </summary>
         /// <param name="path"> a <see cref="string"/> used to represent the path where the CSV file 
         /// is going to be written</param>
-
         void SaveCSV(string fileNamePath);
 
         /// <summary>
@@ -87,14 +86,12 @@ namespace MaxFlowOptimizeDemo
         /// it does nothing.</param>
         void AddSource(CommoditySourceSink Source);
         /// <summary>
-        /// Method used to remove a source from the problem. It also removes the sorce from the commodity sources
-        /// and removes every edge involving the source.
+        /// Method used to remove a source from the problem. It also removes the source from the commodity sources
+        /// and removes every edge involving the source when the sources removed has no more associated commodities.
         /// </summary>
-        /// <param name="Source">The <see cref="string"/> representing the source to remove. If there is no source
-        /// with the given name, it does nothing.</param>
-        /// <param name="Commodity">The <see cref="string"/> representing the commodity of the source to remove. If there is no source
-        /// for the given commodity, it does nothing.</param>
-        void RemoveSource(string Source, string Commodity);
+        /// <param name="toRemove">The <see cref="CommoditySourceSink"/> representing the source to remove. If there is no source
+        /// with the given name or commodity, it does nothing.</param>
+        void RemoveSource(CommoditySourceSink toRemove);
         /// <summary>
         /// Method used to add a sink node to the problem. It only adds the sink if it is not present and
         /// at least one of the commodities passed as input is present in the problem.
@@ -104,13 +101,11 @@ namespace MaxFlowOptimizeDemo
         void AddSink(CommoditySourceSink Sink);
         /// <summary>
         /// Method used to remove a sink from the problem. It also removes the sink from the commodity sinks
-        /// and removes every edge involving the sink.
+        /// and removes every edge involving the sink  when the sink removed has no more associated commodities..
         /// </summary>
-        /// <param name="Sink">The <see cref="string"/> representing the sink to remove. If there is no sink
-        /// with the given name, it does nothing.</param>
-        /// <param name="Commodity">The <see cref="string"/> representing the commodity of the sink to remove. If there is no sink
-        /// for the given commodity, it does nothing.</param>
-        void RemoveSink(string Sink, string Commodity);
+        /// <param name="toRemove">The <see cref="CommoditySourceSink"/> representing the sink to remove. If there is no sink
+        /// with the given name or commodity, it does nothing.</param>
+        void RemoveSink(CommoditySourceSink toRemove);
         /// <summary>
         /// Method used to add a new commodity to the problem. If already present it does nothing.
         /// </summary>
@@ -130,9 +125,15 @@ namespace MaxFlowOptimizeDemo
         /// <param name="Source">The <see cref="string"/> the name of the source to which the commodity is going to be added.</param>
         /// <param name="Commodity"> The <see cref="string"/> commodity that is going to be added to the given source.</param>
         void PrintProblemRows();
-
-
-        void LagrangianTest();
+       /// <summary>
+       /// Method used to modify the loaded problem and transform it in a lagrangian optimization, relaxing some Constraints and adding
+       /// costs to the objective function.
+       /// </summary>
+        void LagrangianOptimization();
+        /// <summary>
+        /// Method used to add an edge in the problem that should be treated as a penality edge, thus modifing its cost in the objective function.
+        /// </summary>
+        /// <param name="Edge"> The <see cref="Edge"/> that will be added as a penality edge</param>
         void AddPenalityEdge(Edge Edge);
 
     }

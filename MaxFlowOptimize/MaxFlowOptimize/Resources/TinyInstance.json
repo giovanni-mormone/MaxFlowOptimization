@@ -44,84 +44,84 @@
     {
       "Source": "x1",
       "Destination": "x3",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x1",
       "Destination": "x4",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x1",
       "Destination": "x5",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x2",
       "Destination": "x4",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x2",
       "Destination": "x5",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x3",
       "Destination": "x4",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x3",
       "Destination": "x6",
-      "Weigth": 4
+      "Weight": 4
 
     },
     {
       "Source": "x4",
       "Destination": "x3",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x4",
       "Destination": "x5",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x5",
       "Destination": "x4",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x5",
       "Destination": "x6",
-      "Weigth": 4
+      "Weight": 4
     },
 
     {
       "Source": "x6",
       "Destination": "x3",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x6",
       "Destination": "x5",
-      "Weigth": 4
+      "Weight": 4
     },
     {
       "Source": "x3",
       "Destination": "xx3",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "x5",
       "Destination": "xx5",
-      "Weigth": -1
+      "Weight": -1
     },
     {
       "Source": "x6",
       "Destination": "xx6",
-      "Weigth": -1
+      "Weight": -1
     }
   ]
 } 
