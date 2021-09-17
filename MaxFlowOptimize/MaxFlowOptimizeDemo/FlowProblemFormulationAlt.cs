@@ -149,7 +149,7 @@ namespace MaxFlowOptimizeDemo
         private void InitializeObjectiveCoeffsLagrangian()
         {
             List<double> test = RepeatedZeroList(edges.Count * (commodities.Count)).ToList();
-            List<double> testLagPenalty = RepeatedZeroList(edges.Count * commodityGroups.Keys.Count).Select(x => x + new Random().Next(100, 1000)).ToList();
+            List<double> testLagPenalty = RepeatedZeroList(edges.Count * commodityGroups.Keys.Count).Select(x => x + new Random().Next(1, 30)).ToList();
             edges.Select((edge, index) => (edge, index)).ToList().ForEach(couple =>
             {
                 penality.Where(penal => penal.Destination == couple.edge.Destination && penal.Source == couple.edge.Source).ToList().ForEach(sink2 =>

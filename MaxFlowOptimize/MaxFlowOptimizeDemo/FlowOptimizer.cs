@@ -338,7 +338,7 @@ namespace MaxFlowOptimizeDemo
         private void InitializeWrapperProblem(JsonProblem jsonProblem, bool isLagrangian)
         {
             int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + (isFirstFormulation ? originalProblem.Commodities.Count : jsonProblem.Commodities.Count));
-            double objconst = isLagrangian? -500.0 : 0;
+            double objconst = isLagrangian? - jsonProblem.Edges.Select(edge => edge.Weigth * 30).Sum() : 0;
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
             List<double> lowerBounds = Enumerable.Repeat(0.0, numberOfVariables).ToList();
