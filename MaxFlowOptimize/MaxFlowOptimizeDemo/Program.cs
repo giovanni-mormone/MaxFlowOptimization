@@ -23,7 +23,7 @@ namespace MaxFlowOptimizeDemo
 
 		private static void RunOptimiziation(string problemName, int edgeMultiplier, bool isVerbose)
       {
-			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblemFormulationAlt(edgeMultiplier),false);
+			IFlowOptimizer flowOptimizer = new FlowOptimizer("MaxFlow", new FlowProblemFormulationAlt(edgeMultiplier), true);
 			flowOptimizer.ReadFromJSON($"../../../Resources/{problemName}");
 			Console.WriteLine("Problema Caricato:");
 			if (isVerbose)
@@ -32,7 +32,14 @@ namespace MaxFlowOptimizeDemo
 			Console.WriteLine(result);
 //			flowOptimizer.SaveMPS($"../../../Resources/loadedProblem-{problemName}");
 			flowOptimizer.SaveCSV($"../../../Resources/loadedProblem-{problemName}");
-//			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
+			//			flowOptimizer.SaveResult($"../../../Resources/problemResult-{problemName}");
+			flowOptimizer.LagrangianTest();
+			if (isVerbose)
+				flowOptimizer.PrintProblemRows();
+			result = flowOptimizer.OptimizeProblem();
+			Console.WriteLine(result);
+			flowOptimizer.SaveCSV($"../../../Resources/loadedProblemLagrangianVersion-{problemName}");
+
 		}
 
 

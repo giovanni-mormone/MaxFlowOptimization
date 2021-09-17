@@ -170,9 +170,14 @@ namespace MaxFlowOptimizeDemo
             }
 
             initialized = true;
-            InitializeWrapperProblem(actualProblem);
+            InitializeWrapperProblem(actualProblem, false);
         }
 
+        public void LagrangianTest()
+        {
+            flow.CreateLagrangian(actualProblem, commodityGroups);
+            InitializeWrapperProblem(actualProblem, true);
+        }
         private void modifyProblem()
         {
             commodityGroups = new();
@@ -328,12 +333,12 @@ namespace MaxFlowOptimizeDemo
         private void RecreateProblem()
         {
             problem = WrapperCoin.CreateProblem(WrapperCoin.GetProblemName(problem));
-            InitializeWrapperProblem(actualProblem);
+            InitializeWrapperProblem(actualProblem, false);
         }
-        private void InitializeWrapperProblem(JsonProblem jsonProblem)
+        private void InitializeWrapperProblem(JsonProblem jsonProblem, bool isLagrangian)
         {
             int numberOfVariables = jsonProblem.Edges.Count * (jsonProblem.Commodities.Count + (isFirstFormulation ? originalProblem.Commodities.Count : jsonProblem.Commodities.Count));
-            double objconst = 0.0;
+            double objconst = isLagrangian? -500.0 : 0;
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();
             List<double> lowerBounds = Enumerable.Repeat(0.0, numberOfVariables).ToList();

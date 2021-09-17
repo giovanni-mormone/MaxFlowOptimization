@@ -179,6 +179,11 @@ namespace MaxFlowOptimizeDemo
             throw new NotImplementedException();
         }
 
+        public void CreateLagrangian(JsonProblem loadedProblem, Dictionary<string, List<string>> commodityGroups)
+        {
+            throw new NotImplementedException();
+        }
+
         //record used to store the data of a given source/sink.
         private record SourceSinkCoeffs(JsonProblem loadedProblem, CommoditySourceSink source, List<double> rowCoeffs);
         //Static private func section;
