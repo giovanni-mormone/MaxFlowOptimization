@@ -18,7 +18,7 @@ namespace MaxFlowOptimizeDemo
     {
         //private variables of the optimizer;
 
-        private static readonly int LAMBDA = 50;
+        private static readonly int LAMBDA = 5;
         private WrapProblem problem;
         //this 2 variables represent the actual state of the problem(e.g after adding nodes, edges, sinks or any modification
         //to it) and the original problem loaded from the json file.
@@ -209,7 +209,7 @@ namespace MaxFlowOptimizeDemo
             //it needs an initialized flow with the first formulation;
             if(isFirstFormulation && initialized)
             {
-                flow.CreateLagrangian(actualProblem, commodityGroups);
+                flow.CreateLagrangian(actualProblem, commodityGroups, LAMBDA);
                 InitializeWrapperProblem(actualProblem, true);
             }
         }

@@ -32,7 +32,7 @@ namespace MaxFlowOptimizeDemo
         /// </summary>
         /// <param name="loadedProblem"> The <see cref="JsonProblem"/> to read and initialize</param>
         /// <param name="commodityGroups"> The <see cref="Dictionary{TKey, TValue}"/> used to represent the pairs of true commodity
-        void CreateLagrangian(JsonProblem loadedProblem, Dictionary<String, List<String>> commodityGroups);
+        void CreateLagrangian(JsonProblem loadedProblem, Dictionary<string, List<string>> commodityGroups, int lambda);
 
         /// <summary>
         /// This method initializes the problem reading a graph from the provided json and using an alternative formulation
