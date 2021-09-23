@@ -36,9 +36,11 @@ namespace MaxFlowOptimizeDemo
         private readonly int nMaxMultiplier;
         //hashset holding all the penality edges
         private HashSet<Edge> penality = new();
-        //dictionary used in the first formulation, old the original commodities as keys associate to the duplicated
+        //dictionary used in the first formulation, holds the original commodities as keys associate to the duplicated
         //commodities source/sink
         Dictionary<string, List<string>> commodityGroups = new();
+        //dictionary used in the first formulation, associates every commodity with the number of requests it has
+        Dictionary<int, int> numberOfCommodityRequests;
 
         /// <summary>
         /// Constructor of this <see cref="IFlowProblem"/> implementation:
@@ -62,6 +64,7 @@ namespace MaxFlowOptimizeDemo
 
         public void InizializeProblemAlternativeFormulation(JsonProblem loadedProblem)
         {
+            numberOfCommodityRequests = new();
             InitializeNodesAndEdges(loadedProblem);
             InitializeObjectiveCoeffsSecondFormulation();
             InitializeRowsSecondFormulation();
@@ -107,6 +110,33 @@ namespace MaxFlowOptimizeDemo
             return _createRow(Enumerable.Empty<double>(), 0);
         }
 
+
+        private int numberRequired(int number) => sinks.Where(sink => sink.Commodity == commodities.First(commo => commo.CommodityNumber == number).CommodityName).Count();
+
+        private List<double> modifyCoeffs(List<double> coeffs, int commodity) => coeffs.Select(coeff => coeff * numberRequired(commodity)).ToList();
+        private List<double> CreateRow2(List<double> coeffs, int commodity, int totalCommodities)
+        {
+
+            coeffs = modifyCoeffs(coeffs, commodity);
+
+            var zeroRow = RepeatedZeroList(coeffs.Count);
+            //questa finalZero serve a mettere le Xi a zero dopo tutte le variabili gestite;
+            //notare che questa cosa solo per la prima formulazione dato che nella seconda i commodity groups
+            //non sono settati e quindi sarà lunga 0
+            var startingZero = RepeatedZeroList(coeffs.Count * totalCommodities);
+
+            //il metodo è tail recursive e inizializza la riga con tutti 0 tranne per la zona
+            //con la commodity interessata
+            List<double> _createRow(IEnumerable<double> origin, int step) => step switch
+            {
+                _ when step == totalCommodities => startingZero.Concat(origin).ToList(),
+                _ when step == commodity => _createRow(origin.Concat(coeffs), step + 1),
+                _ => _createRow(origin.Concat(zeroRow), step + 1)
+            };
+            return _createRow(Enumerable.Empty<double>(), 0);
+        }
+
+
         //metodo che semplicemente legge e salva i dati del grafo passato in input in strutture interne
         private void InitializeNodesAndEdges(JsonProblem loaded)
         {
@@ -117,6 +147,9 @@ namespace MaxFlowOptimizeDemo
             sinks = loaded.CommoditiesSinks.ToHashSet();
             nodes = loaded.Nodes.ToHashSet();
             edges = RangeList(loaded.Edges.Count).Select(x => loaded.Edges.ElementAt(x)).ToHashSet();
+            if (numberOfCommodityRequests != null)
+            commodities.ToList().ForEach(commodity => numberOfCommodityRequests.Add(commodity.CommodityNumber,
+                sinks.Where(sink => sink.Commodity == commodity.CommodityName).Count()));
         }
 
         //metodo che inizializza la funzione obiettivo della prima formulazione
@@ -300,12 +333,67 @@ namespace MaxFlowOptimizeDemo
 
         private void InitializeRowsSecondFormulation()
         {
-            rows = SetInequalitiesConstraints();
+            //rows = SetInequalitiesConstraints();
+            rows = new();
+            var allVertexes = nodes.Concat(sources.Select(source => source.Name)).Concat(sinks.Select(sink => sink.Name));
+            rows = rows.Concat(allVertexes.SelectMany(node =>
+            {
+                var nodeEdges = edges.Select((edge, column) => (edge, column))
+                    .Where(combo => combo.edge.Source == node || combo.edge.Destination == node).ToList();
+
+                //prima creo una lista di zero lunga quanto gli archi, faccio una select per accoppiare valore ed indice nella lista
+                var rowCoeffs = RepeatedZeroList(edges.Count).Select((value, index) =>
+                {
+                    //poi cerco nella lista di archi associati al nodo se ne è presente uno con colonna = all'indice trattato
+                    var cop = nodeEdges.FirstOrDefault(nod => nod.column == index);
+                    //se non è presente quindi == defalt, ritorno il valore originale della lista di zeri creata
+                    //altrimenti ritorno -1 se sono una sorgente e quindi il valore esce o 1 se sono destinazione e quindi entra.
+                    return cop == default ? value : cop.edge.Source == node ? 1 : -1;
+                }).ToList();
+
+                //poi torno le righe creandone una per commodity
+                return RangeList(commodities.Count).Select(x => new Row(CreateRow2(rowCoeffs, x, commodities.Count).ToArray(), equalityInRowNumber(node, x), 'E'));
+            })).ToHashSet();
+
             rows = rows.Concat(edges.Select((edge, column) =>
                 new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
                     .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).Concat(RepeatedZeroList(edges.Count * commodities.Count)).ToArray(), edge.Weight == -1 ? INFINITY : edge.Weight, 'L')))
                 .ToHashSet();
+
+
+            var v = edges.Select((edge, column) =>
+                commodities.Select(commodity => new Row(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? 1 : value).ToList()
+                    .Concat(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? -numberOfCommodityRequests[commodity.CommodityNumber] : value)
+                    .ToList()).ToArray(), 0, 'L'))).SelectMany(x => x).ToHashSet();
+
+
+            rows = rows.Concat(edges.Select((edge, column) =>
+                commodities.Select(commodity => new Row(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? 1 : value).ToList()
+                    .Concat(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? -numberOfCommodityRequests[commodity.CommodityNumber] : value)
+                    .ToList()).ToArray(), 0, 'L'))).SelectMany(x => x)).ToHashSet();
+
+            rows = rows.Concat(edges.Select((edge, column) =>
+                commodities.Select(commodity => new Row(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? -numberOfCommodityRequests[commodity.CommodityNumber] : value).ToList()
+                    .Concat(RepeatedZeroList(edges.Count * commodities.Count).Select((value, col) => col == (column + edges.Count * commodity.CommodityNumber) ? numberOfCommodityRequests[commodity.CommodityNumber] : value)
+                    .ToList()).ToArray(), 0, 'L'))).SelectMany(x => x)).ToHashSet();
+
+           /* rows = rows.Concat(edges.Select((edge, column) =>
+               new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
+                   .Select((value, col) => col == column ? numberOfCommodityRequests[commodityNumber] : value).ToList().Concat(RepeatedZeroList(edges.Count).
+                   Select((value, col) => col == column ? -numberOfCommodityRequests[commodityNumber] : value).ToList())).ToArray(), 0, 'L')))
+               .ToHashSet();
+           */
+
         }
+        
+        private int equalityInRowNumber(string node, int commodity)
+        {
+
+            return sources.Any(source => source.Name == node && source.Commodity == commodities.First(commo => commo.CommodityNumber == commodity).CommodityName) ?
+                numberOfCommodityRequests[commodity] : sinks.Any(sink => sink.Name == node && sink.Commodity == commodities.First(commo => commo.CommodityNumber == commodity).CommodityName) ?
+                -1 : 0;
+        }
+
 
         ////////////////////
 

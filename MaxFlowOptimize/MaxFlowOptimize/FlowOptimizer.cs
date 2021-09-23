@@ -18,7 +18,7 @@ namespace MaxFlowOptimizeDemo
     {
         //private variables of the optimizer;
 
-        private static readonly int LAMBDA = 5;
+        private static readonly int LAMBDA = 50;
         private WrapProblem problem;
         //this 2 variables represent the actual state of the problem(e.g after adding nodes, edges, sinks or any modification
         //to it) and the original problem loaded from the json file.
@@ -428,7 +428,7 @@ namespace MaxFlowOptimizeDemo
             rows.ForEach(x => WrapperCoin.AddRow(ref problem, x.Coeffs, x.ConstraintValue, x.ConstraintType, ""));
             //instructions used to set the type of the variables to Binary, telling they can only assume 0 or 1 values;
             //and telling to the coin solver to use the MILP algorithm.
-            List<char> columnType = Enumerable.Repeat('B', numberOfVariables).ToList();
+            List<char> columnType = isFirstFormulation ? Enumerable.Repeat('B', numberOfVariables).ToList() : Enumerable.Repeat('B', numberOfVariables/2).ToList();
             WrapperCoin.LoadInteger(problem, columnType.ToArray());
         }
 
@@ -436,7 +436,7 @@ namespace MaxFlowOptimizeDemo
         private string CreateVariableNames() => string.Join(",", actualProblem.Commodities.SelectMany(commodity => (actualProblem.Edges.Select(edge =>
         {
             return commodity + "_" + edge.Source + "->" + edge.Destination;
-        }))).Concat(isFirstFormulation ? _createXiName() : new ()).ToList().Select(x => $"{x}")).ToString();
+        }))).Concat(isFirstFormulation ? _createXiName() : _createXiName()).ToList().Select(x => $"{x}")).ToString();
 
         //it is used if using the first formulation and i need to give a name to the Xi variables.
         private List<string> _createXiName() => originalProblem.Commodities.SelectMany(commodity => actualProblem.Edges.Select(edge =>
