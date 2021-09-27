@@ -5,123 +5,123 @@
     {
       "Name": "x1",
       "Commodity": "c1",
-      "Capacity": 2
+      "Weight": 2
     },
     {
       "Name": "x1",
       "Commodity": "c2",
-      "Capacity": 2
+      "Weight": 2
     },
     {
       "Name": "x2",
       "Commodity": "c3",
-      "Capacity": 2
+      "Weight": 2
     }
   ],
   "CommoditiesSinks": [
     {
       "Name": "xx5",
       "Commodity": "c1",
-      "Capacity": -1
+      "Weight": -1
     },
     {
       "Name": "xx6",
       "Commodity": "c1",
-      "Capacity": -1
+      "Weight": -1
     },
     {
       "Name": "xx6",
       "Commodity": "c2",
-      "Capacity": -1
+      "Weight": -1
     },
     {
       "Name": "xx3",
       "Commodity": "c3",
-      "Capacity": -1
+      "Weight": -1
     }
   ],
   "Edges": [
     {
       "Source": "x1",
       "Destination": "x3",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x1",
       "Destination": "x4",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x1",
       "Destination": "x5",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x2",
       "Destination": "x4",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x2",
       "Destination": "x5",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x3",
       "Destination": "x4",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x3",
       "Destination": "x6",
-      "Weight": 4
+      "Capacity": 4
 
     },
     {
       "Source": "x4",
       "Destination": "x3",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x4",
       "Destination": "x5",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x5",
       "Destination": "x4",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x5",
       "Destination": "x6",
-      "Weight": 4
+      "Capacity": 4
     },
 
     {
       "Source": "x6",
       "Destination": "x3",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x6",
       "Destination": "x5",
-      "Weight": 4
+      "Capacity": 4
     },
     {
       "Source": "x3",
       "Destination": "xx3",
-      "Weight": -1
+      "Capacity": -1
     },
     {
       "Source": "x5",
       "Destination": "xx5",
-      "Weight": -1
+      "Capacity": -1
     },
     {
       "Source": "x6",
       "Destination": "xx6",
-      "Weight": -1
+      "Capacity": -1
     }
   ]
 } 

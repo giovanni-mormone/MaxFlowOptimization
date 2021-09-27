@@ -1,102 +1,102 @@
 ﻿{
-  "Nodes": [ "n1", "n2", "n3", "n4" ],
+  "Nodes": [ "N1", "N2", "N3", "N4" ],
   "Commodities": [ "k1", "k2","k3" ],
   "CommoditiesSources": [
     {
-      "Name": "s1",
+      "Name": "S1",
       "Commodity": "k1",
-      "Capacity": 15
+      "Weight": 45
     },
 
     {
-      "Name": "s2",
+      "Name": "S1",
       "Commodity": "k2",
-      "Capacity": 19
+      "Weight": 35
     },
     {
-      "Name": "s2",
+      "Name": "S2",
       "Commodity": "k3",
-      "Capacity": 70
+      "Weight": 70
     }
   ],
   "CommoditiesSinks": [
     {
-      "Name": "t1",
+      "Name": "T1",
       "Commodity": "k1",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t1",
+      "Name": "T1",
       "Commodity": "k2",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t2",
+      "Name": "T2",
       "Commodity": "k1",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t2",
+      "Name": "T2",
       "Commodity": "k3",
-      "Capacity": -1
+      "Weight": -1
     }
   ],
   "Edges": [
     {
-      "Source": "s1",
-      "Destination": "n1",
-      "Weight": -1
+      "Source": "S1",
+      "Destination": "N1",
+      "Capacity": 70
     },
     {
-      "Source": "s1",
-      "Destination": "n3",
-      "Weight": -1
+      "Source": "S1",
+      "Destination": "N3",
+      "Capacity": 70
     },
     {
-      "Source": "s2",
-      "Destination": "n3",
-      "Weight": -1
+      "Source": "S2",
+      "Destination": "N3",
+      "Capacity": 70
     },
     {
-      "Source": "n1",
-      "Destination": "n2",
-      "Weight": 70
+      "Source": "N1",
+      "Destination": "N2",
+      "Capacity": 70
     },
     {
-      "Source": "n1",
-      "Destination": "n4",
-      "Weight": 70
+      "Source": "N1",
+      "Destination": "N4",
+      "Capacity": 70
     },
     {
-      "Source": "n3",
-      "Destination": "n2",
-      "Weight": 70
+      "Source": "N3",
+      "Destination": "N2",
+      "Capacity": 70
     },
     {
-      "Source": "n3",
-      "Destination": "n4",
-      "Weight": 70
+      "Source": "N3",
+      "Destination": "N4",
+      "Capacity": 70
 
     },
     {
-      "Source": "n2",
-      "Destination": "t1",
-      "Weight": -1
+      "Source": "N2",
+      "Destination": "T1",
+      "Capacity": 70
     },
     {
-      "Source": "n2",
-      "Destination": "t2",
-      "Weight": -1
+      "Source": "N2",
+      "Destination": "T2",
+      "Capacity": 70
     },
     {
-      "Source": "n4",
-      "Destination": "t1",
-      "Weight": -1
+      "Source": "N4",
+      "Destination": "T1",
+      "Capacity": 70
     },
     {
-      "Source": "n4",
-      "Destination": "t2",
-      "Weight": -1
+      "Source": "N4",
+      "Destination": "T2",
+      "Capacity": 70
     }
   ]
 } 

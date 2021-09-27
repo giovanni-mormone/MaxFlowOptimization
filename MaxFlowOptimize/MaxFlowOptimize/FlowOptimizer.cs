@@ -18,7 +18,7 @@ namespace MaxFlowOptimizeDemo
     {
         //private variables of the optimizer;
 
-        private static readonly int LAMBDA = 50;
+        private static readonly int LAMBDA = 3;
         private WrapProblem problem;
         //this 2 variables represent the actual state of the problem(e.g after adding nodes, edges, sinks or any modification
         //to it) and the original problem loaded from the json file.
@@ -232,7 +232,7 @@ namespace MaxFlowOptimizeDemo
                     string dummySink = sink.Name + commodity;
                     //addition of the commodity, a new source and sink to the problem
                     AddCommodity(newCommodity);
-                    AddSource(new CommoditySourceSink(source.Name, newCommodity, source.Capacity));
+                    AddSource(new CommoditySourceSink(source.Name, newCommodity, source.Weight));
                     AddSink(new CommoditySourceSink(dummySink, newCommodity, -1));
                     //this is needed because we have to remove the old sink from the sink list and re-add it to the problem
                     //as a node; if we remove a sink and it not requires other commodities, the method remove sink also removes
@@ -403,7 +403,7 @@ namespace MaxFlowOptimizeDemo
             
             //if it is using a lagrangian formulation for the first formulation, there is a cost to remove associated to 
             //each edge capacity and a lambda -> !!!!the lambda is a random value in this formulation!!!!
-            double objconst = isLagrangian? - jsonProblem.Edges.Select(edge => edge.Weight * LAMBDA).Sum() : 0;
+            double objconst = isLagrangian? - jsonProblem.Edges.Select(edge => edge.Capacity * LAMBDA).Sum() : 0;
             //setting the problem direction to minimization
             int objsens = WrapperCoin.SOLV_OBJSENS_MIN;
             double infinite = WrapperCoin.GetInfinity();

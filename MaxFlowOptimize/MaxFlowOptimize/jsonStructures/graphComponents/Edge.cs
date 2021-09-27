@@ -12,7 +12,7 @@ namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
         /// <summary>
         /// The Weight of the edge
         /// </summary>
-        public readonly double Weight;
+        public readonly double Capacity;
         /// <summary>
         /// The  Source node of the edge
         /// </summary>
@@ -22,9 +22,9 @@ namespace MaxFlowOptimizeDemo.jsonStructures.graphComponents
         /// </summary>
         public readonly string Destination;
 
-        public Edge(int Weight ,string Source,string Destination)
+        public Edge(int Capacity ,string Source,string Destination)
         {
-            this.Weight = Weight;
+            this.Capacity = Capacity;
             this.Source = Source;
             this.Destination = Destination;
         }

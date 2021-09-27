@@ -1,5 +1,6 @@
 {
 	"isVerbose": false,
-	"problemFile": "problem2.json",
+	"isFirstFormulation": false,
+	"problemFile": "problem.json",
 	"nmax": 100
 }

@@ -240,9 +240,21 @@ namespace MaxFlowOptimizeDemo
             {
                 //questo vincolo si applica a tutti gli archi tranne quelli che vanno verso le dummyDestinations;
                 //per ogni arco lo mappo associandogli la su colonna e costruisco la riga
-                return edges.Where(edge => sinks.All(sink => sink.Name != edge.Destination)).Select((edge, column) =>
-                    new Row(constructMultiCommodityRow(commodities, column), 0, 'L')).ToHashSet();
+                //var ddd = edges.Where(edge => sinks.All(sink => sink.Name != edge.Destination)).ToList();
+                return edges.Select((edge, column) => (edge,column)).Where(edge => sinks.All(sink => sink.Name != edge.edge.Destination)).Select( edge =>
+                    new Row(constructMultiCommodityRow(commodities, edge.column), 0, 'L')).ToHashSet();
             })).ToHashSet();
+
+            /*edges.Select((edge,id) => (edge,id)).ToList().ForEach((edge) =>
+            {
+                commodityGroups.Keys.Select((_, number) => number).ToList().ForEach(coNum =>
+                 {
+                    double[] coeffs = RepeatedZeroList(edges.Count * (commodities.Count + commodityGroups.Keys.Count)).ToArray();
+                    var xiid = (edges.Count * commodities.Count) + (edge.id + (coNum * edges.Count));
+                    coeffs[xiid] = 1;
+                     rows = rows.Append(new Row(coeffs, 1, 'L')).ToHashSet();
+                 });
+            });*/
         }
 
         //metodo che inizializza i vincoli per le capacità delle righe nella prima formulazione
@@ -253,7 +265,7 @@ namespace MaxFlowOptimizeDemo
             //vincoli e formulazione si sta parlando)
             rows = rows.Concat(edges.Select((edge, column) =>
                new Row(RangeList(commodities.Count + commodityGroups.Keys.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
-                   .Select((value, col) => col == column && commodityNumber >= commodities.Count ? FindAkCommodity(findChildCommodityNumber(commodityNumber)) : value).ToList()).ToArray(), edge.Weight == -1 ? INFINITY : edge.Weight, 'L')))
+                   .Select((value, col) => col == column && commodityNumber >= commodities.Count ? FindAkCommodity(findChildCommodityNumber(commodityNumber)) : value).ToList()).ToArray(), edge.Capacity == -1 ? INFINITY : edge.Capacity, 'L')))
                .ToHashSet();
         }
 
@@ -357,7 +369,7 @@ namespace MaxFlowOptimizeDemo
 
             rows = rows.Concat(edges.Select((edge, column) =>
                 new Row(RangeList(commodities.Count).SelectMany(commodityNumber => RepeatedZeroList(edges.Count)
-                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).Concat(RepeatedZeroList(edges.Count * commodities.Count)).ToArray(), edge.Weight == -1 ? INFINITY : edge.Weight, 'L')))
+                    .Select((value, col) => col == column ? FindAkCommodity(commodityNumber) : value).ToList()).Concat(RepeatedZeroList(edges.Count * commodities.Count)).ToArray(), edge.Capacity == -1 ? INFINITY : edge.Capacity, 'L')))
                 .ToHashSet();
 
 
@@ -398,7 +410,7 @@ namespace MaxFlowOptimizeDemo
         ////////////////////
 
         //metodo che trova il peso di una commodity a partire dal suo numero
-        private double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Capacity;
+        private double FindAkCommodity(int commodityNumber) => sources.First(x => x.Commodity == commodities.First(xx => xx.CommodityNumber == commodityNumber).CommodityName).Weight;
 
         //Method used to compute, in a tail recursive way, the row constraints of sources and sinks;
         //It uses the loaded problem, a boolean to decide if it is source or sink,

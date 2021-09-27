@@ -1,0 +1,50 @@
+﻿{
+  "Nodes": [ "N1", "N2" ],
+  "Commodities": [ "c1", "c2" ],
+  "CommoditiesSources": [
+    {
+      "Name": "S",
+      "Commodity": "c1",
+      "Weight": 4
+    },
+    {
+      "Name": "S",
+      "Commodity": "c2",
+      "Weight": 4
+    }
+  ],
+  "CommoditiesSinks": [
+    {
+      "Name": "T",
+      "Commodity": "c1",
+      "Weight": -1
+    },
+    {
+      "Name": "T",
+      "Commodity": "c2",
+      "Weight": -1
+    }
+  ],
+  "Edges": [
+    {
+      "Source": "S",
+      "Destination": "N1",
+      "Capacity": 4
+    },
+    {
+      "Source": "S",
+      "Destination": "N2",
+      "Capacity": 4
+    },
+    {
+      "Source": "N1",
+      "Destination": "N2",
+      "Capacity": 4
+    },
+    {
+      "Source": "N2",
+      "Destination": "T",
+      "Capacity": 10
+    }
+  ]
+}

@@ -1,206 +1,301 @@
 ﻿{
  
-  "Nodes": [ "n1", "n2", "n3", "n4","n5","n6","n7","n8" ],
-  "Commodities": [ "k1", "k2" ,"k3","k4"],
+  "Nodes": [ "N1", "N2", "N3", "N4","N5","N6","N7","N8" ],
+  "Commodities": [ "k1", "k2" ,"k3","k4","k5","k6"],
   "CommoditiesSources": [
     {
-      "Name": "s1",
+      "Name": "S1",
       "Commodity": "k1",
-      "Capacity": 56
+      "Weight": 20
     },
     {
-      "Name": "s1",
+      "Name": "S1",
       "Commodity": "k2",
-      "Capacity": 70
+      "Weight": 20
     },
     {
-      "Name": "s2",
+      "Name": "S2",
       "Commodity": "k3",
-      "Capacity": 60
+      "Weight": 25
     },
     {
-      "Name": "s3",
+      "Name": "S2",
       "Commodity": "k4",
-      "Capacity": 93
+      "Weight": 25
+    },
+    {
+      "Name": "S3",
+      "Commodity": "k5",
+      "Weight": 15
+    },
+    {
+      "Name": "S3",
+      "Commodity": "k6",
+      "Weight": 20
     }
   ],
   "CommoditiesSinks": [
     {
-      "Name": "t1",
+      "Name": "T1",
       "Commodity": "k1",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t1",
+      "Name": "T1",
       "Commodity": "k4",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t2",
+      "Name": "T1",
+      "Commodity": "k6",
+      "Weight": -1
+    },
+    {
+      "Name": "T2",
       "Commodity": "k2",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t2",
+      "Name": "T2",
       "Commodity": "k3",
-      "Capacity": -1
+      "Weight": -1
     },
     {
-      "Name": "t3",
+      "Name": "T2",
       "Commodity": "k4",
-      "Capacity": -1
+      "Weight": -1
+    },
+    {
+      "Name": "T3",
+      "Commodity": "k4",
+      "Weight": -1
+    },
+    {
+      "Name": "T3",
+      "Commodity": "k5",
+      "Weight": -1
+    },
+    {
+      "Name": "T3",
+      "Commodity": "k6",
+      "Weight": -1
     }
   ],
   "Edges": [
     {
-      "Source": "s1",
-      "Destination": "n1",
-      "Weight": -1
+      "Source": "S1",
+      "Destination": "N1",
+      "Capacity": 40
     },
     {
-      "Source": "s1",
-      "Destination": "n3",
-      "Weight": -1
+      "Source": "S1",
+      "Destination": "N3",
+      "Capacity": 40
     },
     {
-      "Source": "s1",
-      "Destination": "n5",
-      "Weight": -1
+      "Source": "S2",
+      "Destination": "N2",
+      "Capacity": 40
     },
     {
-      "Source": "s2",
-      "Destination": "n1",
-      "Weight": -1
+      "Source": "S2",
+      "Destination": "N4",
+      "Capacity": 40
     },
     {
-      "Source": "s2",
-      "Destination": "n3",
-      "Weight": -1
+      "Source": "S3",
+      "Destination": "N3",
+      "Capacity": 40
     },
     {
-      "Source": "s3",
-      "Destination": "n2",
-      "Weight": -1
+      "Source": "S3",
+      "Destination": "N5",
+      "Capacity": 40
     },
     {
-      "Source": "n1",
-      "Destination": "n2",
-      "Weight": 123
+      "Source": "N1",
+      "Destination": "N2",
+      "Capacity": 40
     },
     {
-      "Source": "n1",
-      "Destination": "n4",
-      "Weight": 97
+      "Source": "N1",
+      "Destination": "N6",
+      "Capacity": 40
     },
     {
-      "Source": "n1",
-      "Destination": "n7",
-      "Weight": 74
+      "Source": "N2",
+      "Destination": "N1",
+      "Capacity": 40
     },
     {
-      "Source": "n2",
-      "Destination": "n6",
-      "Weight": 149
+      "Source": "N2",
+      "Destination": "N3",
+      "Capacity": 40
     },
     {
-      "Source": "n2",
-      "Destination": "n8",
-      "Weight": 49
+      "Source": "N2",
+      "Destination": "N5",
+      "Capacity": 40
     },
     {
-      "Source": "n3",
-      "Destination": "n2",
-      "Weight": 178
+      "Source": "N2",
+      "Destination": "N6",
+      "Capacity": 40
     },
     {
-      "Source": "n3",
-      "Destination": "n4",
-      "Weight": 131
+      "Source": "N2",
+      "Destination": "N7",
+      "Capacity": 40
     },
     {
-      "Source": "n3",
-      "Destination": "n8",
-      "Weight": 59
+      "Source": "N3",
+      "Destination": "N2",
+      "Capacity": 40
     },
     {
-      "Source": "n4",
-      "Destination": "n7",
-      "Weight": 68
+      "Source": "N3",
+      "Destination": "N4",
+      "Capacity": 40
     },
     {
-      "Source": "n4",
-      "Destination": "n8",
-      "Weight": 49
+      "Source": "N3",
+      "Destination": "N5",
+      "Capacity": 40
     },
     {
-      "Source": "n4",
-      "Destination": "t2",
-      "Weight": -1
+      "Source": "N3",
+      "Destination": "N7",
+      "Capacity": 40
     },
     {
-      "Source": "n5",
-      "Destination": "n2",
-      "Weight": 190
+      "Source": "N4",
+      "Destination": "N3",
+      "Capacity": 40
     },
     {
-      "Source": "n5",
-      "Destination": "n6",
-      "Weight": 88
+      "Source": "N4",
+      "Destination": "N5",
+      "Capacity": 40
     },
     {
-      "Source": "n5",
-      "Destination": "n7",
-      "Weight": 63
+      "Source": "N5",
+      "Destination": "N2",
+      "Capacity": 40
     },
     {
-      "Source": "n6",
-      "Destination": "n7",
-      "Weight": 128
+      "Source": "N5",
+      "Destination": "N3",
+      "Capacity": 40
     },
     {
-      "Source": "n6",
-      "Destination": "n8",
-      "Weight": 185
+      "Source": "N5",
+      "Destination": "N4",
+      "Capacity": 40
     },
     {
-      "Source": "n6",
-      "Destination": "t3",
-      "Weight": -1
+      "Source": "N5",
+      "Destination": "N6",
+      "Capacity": 40
     },
     {
-      "Source": "n7",
-      "Destination": "n3",
-      "Weight": 133
+      "Source": "N5",
+      "Destination": "N7",
+      "Capacity": 40
     },
     {
-      "Source": "n7",
-      "Destination": "n8",
-      "Weight": 99
+      "Source": "N5",
+      "Destination": "N8",
+      "Capacity": 40
     },
     {
-      "Source": "n7",
-      "Destination": "t1",
-      "Weight": -1
+      "Source": "N6",
+      "Destination": "N1",
+      "Capacity": 40
     },
     {
-      "Source": "n7",
-      "Destination": "t3",
-      "Weight": -1
+      "Source": "N6",
+      "Destination": "N2",
+      "Capacity": 40
     },
     {
-      "Source": "n8",
-      "Destination": "n4",
-      "Weight": 194
+      "Source": "N6",
+      "Destination": "N5",
+      "Capacity": 40
     },
     {
-      "Source": "n8",
-      "Destination": "t3",
-      "Weight": -1
+      "Source": "N6",
+      "Destination": "N7",
+      "Capacity": 40
     },
     {
-      "Source": "n8",
-      "Destination": "t2",
-      "Weight": -1
+      "Source": "N7",
+      "Destination": "N2",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "N3",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "N5",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "N6",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "N8",
+      "Capacity": 40
+    },
+    {
+      "Source": "N8",
+      "Destination": "N5",
+      "Capacity": 40
+    },
+    {
+      "Source": "N8",
+      "Destination": "N7",
+      "Capacity": 40
+    },
+    {
+      "Source": "N5",
+      "Destination": "T3",
+      "Capacity": 40
+    },
+    {
+      "Source": "N6",
+      "Destination": "T1",
+      "Capacity": 40
+    },
+    {
+      "Source": "N6",
+      "Destination": "T2",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "T1",
+      "Capacity": 40
+    },
+    {
+      "Source": "N7",
+      "Destination": "T2",
+      "Capacity": 40
+    },
+    {
+      "Source": "N8",
+      "Destination": "T2",
+      "Capacity": 40
+    },
+    {
+      "Source": "N8",
+      "Destination": "T3",
+      "Capacity": 40
     }
   ]
 } 
